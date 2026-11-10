@@ -4,395 +4,922 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Vinay Naidu — Robotics Engineer &amp; Researcher</title>
+  <title>Vinay Naidu — Underwater Autonomy &amp; AI</title>
   <meta name="description"
-    content="Vinay Naidu — robotics engineer & researcher. Governed memory for embodied AI · autonomous underwater systems." />
+    content="Vinay Naidu — Senior Autonomy/GNC Engineer. Underwater robots that work without GPS, and AI that keeps learning." />
+  <meta name="color-scheme" content="dark" />
   <style>
     :root {
-      --bg: #FCFBF9;
-      --ink: #1C1B1A;
-      --ink-soft: #4A4742;
-      --ink-dim: #807B73;
-      --hair: #E7E3DC;
-      --panel: #F4F1EB;
-      --serif: "Charter", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      --bg: #0A0D0C;
+      --panel: #111615;
+      --hair: #212928;
+      --ink: #E9EEEC;
+      --ink-soft: #AEB8B5;
+      --ink-dim: #6F7B78;
+      --sea: #5FE3C8;
+      --ai: #F6B55C;
+      --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
     }
 
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #151413;
-        --ink: #E8E5DF;
-        --ink-soft: #B9B4AC;
-        --ink-dim: #8A857D;
-        --hair: #2B2925;
-        --panel: #1D1C1A;
-      }
-    }
-
     * { box-sizing: border-box; }
-
     html { scroll-behavior: smooth; }
 
     body {
       margin: 0;
       background: var(--bg);
       color: var(--ink);
-      font-family: var(--serif);
-      font-size: 17px;
-      line-height: 1.65;
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.6;
       -webkit-font-smoothing: antialiased;
     }
 
-    .wrap {
-      max-width: 46rem;
-      margin: 0 auto;
-      padding: 0 1.375rem;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: underline;
-      text-decoration-color: var(--ink-dim);
-      text-underline-offset: 3px;
-      text-decoration-thickness: 1px;
-    }
-
+    a { color: inherit; text-underline-offset: 3px; text-decoration-color: var(--ink-dim); }
     a:hover { text-decoration-color: var(--ink); }
 
-    /* ---------- header ---------- */
-    header {
-      padding: 4.5rem 0 3rem;
-    }
+    .wrap { max-width: 68rem; margin: 0 auto; padding: 0 1.25rem; }
+    .mono { font-family: var(--mono); letter-spacing: 0.06em; }
 
-    header h1 {
-      font-size: 1.9rem;
-      font-weight: 500;
-      letter-spacing: -0.01em;
-      margin: 0 0 0.6rem;
-    }
+    /* ---------- stage: full-screen chart, scroll drives horizontal travel ---------- */
+    #stage { position: relative; }
+    #viewport { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; overflow: clip; }
+    #world { position: absolute; top: 0; left: 0; height: 100%; will-change: transform; }
+    #world canvas, #world svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    #world canvas { pointer-events: none; }
+    #tags { position: absolute; inset: 0; }
 
-    .oneliner {
-      color: var(--ink-soft);
-      max-width: 34em;
-      margin: 0 0 1.75rem;
-    }
+    #hud { position: absolute; top: 0; left: 0; padding: 1.5rem 1.75rem; pointer-events: none; z-index: 2; opacity: 0; transition: opacity 0.4s; }
+    #hud.show { opacity: 1; }
+    #hud h1 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
 
-    nav {
-      font-family: var(--mono);
-      font-size: 0.78rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--ink-dim);
-    }
+    /* the brief sits on the chart beside the name, and scrolls away with it */
+    #intro { position: absolute; opacity: 0; transition: opacity 0.6s; }
+    .ready #intro { opacity: 1; }
+    #intro .s { color: var(--sea); }
+    #intro .a { color: var(--ai); }
+    #intro .go { font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); margin: 0; }
 
-    nav a {
-      text-decoration: none;
-      color: inherit;
-      margin-right: 1.5rem;
-    }
+    /* opening 1: mission header, typed out like a vehicle console */
+    .mh { font-family: var(--mono); font-size: 0.84rem; line-height: 1.5; margin: 0 0 1.3rem; display: grid; gap: 0.5rem; }
+    .mh div { display: grid; grid-template-columns: 5.4rem 1fr; clip-path: inset(0 100% 0 0); }
+    .mh dt { color: var(--ink-dim); letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.72rem; padding-top: 0.1rem; }
+    .mh dd { margin: 0; color: var(--ink); }
+    .ready .mh div { animation: type 0.5s steps(30) forwards; animation-delay: calc(var(--i) * 0.36s); }
+    .mission .go { opacity: 0; }
+    .ready .mission .go { animation: appear 0.3s 1.7s forwards; }
+    .cur { display: inline-block; width: 0.55em; height: 1em; margin-left: 0.4em; vertical-align: -0.15em; background: var(--sea); animation: blink 1s steps(2) infinite; }
+    @keyframes type { to { clip-path: inset(0 0 0 0); } }
+    @keyframes appear { to { opacity: 1; } }
+    @keyframes blink { 50% { opacity: 0; } }
 
-    nav a:hover { color: var(--ink); }
+    /* opening 2: sonar reveal, the name detected and boxed like a sonar contact */
+    #sweep { display: none; position: absolute; top: 0; bottom: 0; left: 0; width: 180px; z-index: 4; pointer-events: none;
+      background: linear-gradient(90deg, rgba(95, 227, 200, 0), rgba(95, 227, 200, 0.16) 80%, rgba(210, 255, 246, 0.95) 99%, rgba(210, 255, 246, 0)); }
+    #fx { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 4; pointer-events: none; opacity: 0; transition: opacity 0.8s; }
+    .det-box { fill: none; stroke: var(--sea); stroke-width: 1.5; opacity: 0; transition: opacity 0.4s 0.15s; }
+    .ready .det-box { opacity: 0.9; }
+    .det-label { position: absolute; translate: 0 -100%; background: var(--sea); color: #0A0D0C; font-family: var(--mono); font-size: 0.66rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.2rem 0.5rem; white-space: nowrap; opacity: 0; transition: opacity 0.4s 0.3s; }
+    .ready .det-label { opacity: 1; }
+    .sonar .sig { font-size: clamp(1.2rem, 2.3vw, 1.75rem); font-weight: 500; letter-spacing: -0.01em; margin: 0 0 1rem; }
+    .sonar .go i { display: inline-block; font-style: normal; color: var(--sea); margin-left: 0.5rem; animation: nudge 1.6s ease-in-out infinite; }
+    @keyframes nudge { 50% { transform: translateX(7px); } }
+    .nm-glow { fill: none; stroke: url(#nmg); stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; opacity: 0.16; }
+    .nm-lit { fill: none; stroke: url(#nmg); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
 
-    /* ---------- sections ---------- */
-    section { padding: 2.5rem 0 1rem; }
+    #views { position: absolute; top: 1.5rem; right: 1.75rem; z-index: 3; display: flex; gap: 0.25rem; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    #views button { background: transparent; color: var(--ink-dim); border: 1px solid var(--hair); border-radius: 999px; padding: 0.3rem 0.7rem; font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; }
+    #views button[aria-pressed="true"] { color: var(--ink); border-color: var(--ink-dim); }
+    #intros { position: absolute; top: 3.9rem; right: 1.75rem; z-index: 3; display: flex; gap: 0.25rem; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    #intros button { background: transparent; color: var(--ink-dim); border: 1px solid var(--hair); border-radius: 999px; padding: 0.3rem 0.7rem; font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; }
+    #intros button[aria-pressed="true"] { color: var(--ink); border-color: var(--ink-dim); }
+    #year { position: absolute; left: 1.75rem; bottom: 1.1rem; z-index: 1; font-family: var(--mono); font-size: clamp(3rem, 9vw, 6.5rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1; color: var(--ink); opacity: 0.07; pointer-events: none; }
 
-    .kicker {
-      font-family: var(--mono);
-      font-size: 0.72rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--ink-dim);
-      border-top: 1px solid var(--hair);
-      padding-top: 1.1rem;
-      margin: 0 0 2.25rem;
-    }
+    .base { fill: none; stroke: var(--hair); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .glow { fill: none; stroke-width: 12; stroke-linecap: round; stroke-linejoin: round; opacity: 0.16; }
+    .lit { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    .sea-c { stroke: var(--sea); }
+    .ai-c { stroke: var(--ai); }
+    .future { fill: none; stroke: var(--ink-dim); stroke-width: 2; stroke-dasharray: 3 9; stroke-linecap: round; }
+    .stem { stroke: var(--hair); stroke-width: 1; }
+    .decor { fill: none; stroke: var(--ink-dim); stroke-width: 1; opacity: 0.6; }
+    .decor.fill { fill: var(--ink-dim); stroke: none; }
+    .decor.sq { fill: var(--bg); opacity: 0.9; }
+    .decor.ghost { stroke-dasharray: 2 6; stroke-linecap: round; }
+    .node { fill: var(--bg); stroke: var(--ink-dim); stroke-width: 2; transition: stroke 0.25s; }
+    .node.on.sea { stroke: var(--sea); }
+    .node.on.ai { stroke: var(--ai); }
+    .ring { fill: none; stroke: var(--ai); stroke-width: 1.5; opacity: 0.25; transition: opacity 0.25s; }
+    .ring.on { opacity: 0.95; }
+    .auv .hull { fill: #F2F6F4; }
+    .auv .dark { fill: #0A0D0C; }
+    .halo { opacity: 0.22; }
+    .aidot { fill: #fff; }
 
-    /* ---------- research entries ---------- */
-    .entry { margin: 0 0 3.5rem; }
-
-    .entry .date {
-      font-family: var(--mono);
-      font-size: 0.75rem;
-      letter-spacing: 0.08em;
-      color: var(--ink-dim);
-      display: block;
-      margin-bottom: 0.35rem;
-    }
-
-    .entry h3 {
-      font-size: 1.28rem;
-      font-weight: 500;
-      letter-spacing: -0.005em;
-      margin: 0 0 0.55rem;
-      line-height: 1.35;
-    }
-
-    .entry h3 a { text-decoration: none; }
-    .entry h3 a:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-
-    .entry p {
-      margin: 0 0 0.75rem;
-      color: var(--ink-soft);
-    }
-
-    .entry .more {
-      font-family: var(--mono);
-      font-size: 0.78rem;
-      letter-spacing: 0.04em;
-    }
-
-    .entry figure {
-      margin: 1.15rem 0 0;
-    }
-
-    .entry figure a { display: block; }
-
-    .entry img,
-    .entry video {
-      width: 100%;
-      max-width: 100%;
-      display: block;
-      border-radius: 4px;
-      border: 1px solid var(--hair);
-    }
-
-    .entry figcaption {
-      font-family: var(--mono);
-      font-size: 0.72rem;
-      color: var(--ink-dim);
-      margin-top: 0.5rem;
-      letter-spacing: 0.03em;
-    }
-
-    /* ---------- robotics grid ---------- */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-      gap: 1.75rem 1.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .card .media {
-      aspect-ratio: 16 / 10;
-      overflow: hidden;
-      border-radius: 4px;
-      border: 1px solid var(--hair);
+    .tag {
+      position: absolute;
+      translate: -50% -100%;
+      display: flex; flex-direction: column; align-items: flex-start; gap: 0.05rem;
+      padding: 0.45rem 0.75rem 0.5rem;
       background: var(--panel);
-      margin-bottom: 0.7rem;
-    }
-
-    .card .media img,
-    .card .media video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .card .media.contain img { object-fit: contain; }
-
-    .card h4 {
-      font-size: 1rem;
-      font-weight: 500;
-      margin: 0 0 0.25rem;
-    }
-
-    .card p {
-      font-size: 0.88rem;
-      color: var(--ink-soft);
-      margin: 0 0 0.3rem;
-      line-height: 1.5;
-    }
-
-    .card .more {
-      font-family: var(--mono);
-      font-size: 0.74rem;
-    }
-
-    /* ---------- contact ---------- */
-    .contact-list {
-      list-style: none;
-      padding: 0;
-      margin: 0 0 3rem;
-      font-family: var(--mono);
-      font-size: 0.85rem;
-      line-height: 2.2;
-    }
-
-    footer {
-      border-top: 1px solid var(--hair);
-      padding: 1.5rem 0 3rem;
-      font-family: var(--mono);
-      font-size: 0.72rem;
+      border: 1px solid var(--hair);
+      border-radius: 8px;
       color: var(--ink-dim);
-      letter-spacing: 0.04em;
+      font: inherit; text-align: left; cursor: pointer; white-space: nowrap;
+      transition: border-color 0.25s, color 0.25s, scale 0.15s;
+    }
+    .tag.below { translate: -50% 0; }
+    .tag .d { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.08em; }
+    .tag .n { font-size: 0.95rem; font-weight: 600; line-height: 1.25; }
+    .tag.on { color: var(--ink); }
+    .tag.on.sea { border-color: color-mix(in srgb, var(--sea) 55%, transparent); }
+    .tag.on.ai { border-color: color-mix(in srgb, var(--ai) 55%, transparent); }
+    .tag.on.sea .d { color: var(--sea); }
+    .tag.on.ai .d { color: var(--ai); }
+    .tag:hover, .tag[aria-expanded="true"] { scale: 1.05; color: var(--ink); }
+    .tag:focus-visible, .x:focus-visible, a:focus-visible, #views button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+    .endlabel { position: absolute; translate: -50% -100%; text-align: center; font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); white-space: nowrap; }
+
+    /* ---------- detail card ---------- */
+    #card {
+      position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 10;
+      width: min(24rem, calc(100vw - 2.5rem));
+      max-height: calc(100vh - 2.5rem); overflow: auto;
+      background: var(--panel);
+      border: 1px solid var(--hair);
+      border-radius: 14px;
+      padding: 1.25rem 1.25rem 1.35rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+    }
+    #card[hidden] { display: none; }
+    #card .k { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); margin: 0 2rem 0.5rem 0; }
+    #card h2 { font-size: 1.3rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; margin: 0 0 0.6rem; }
+    #card p { margin: 0 0 0.85rem; color: var(--ink-soft); font-size: 0.95rem; }
+    #card .m { display: flex; align-items: baseline; gap: 0.75rem; margin: 0 0 0.9rem; }
+    #card .m b { font-size: 2rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1; white-space: nowrap; }
+    #card .m span { font-size: 0.82rem; color: var(--ink-soft); line-height: 1.35; }
+    #card.sea .m b { color: var(--sea); }
+    #card.ai .m b { color: var(--ai); }
+    #card .cross { border-left: 2px solid var(--ai); padding-left: 0.75rem; font-size: 0.88rem; }
+    #card .media { margin: 0 0 0.9rem; border-radius: 8px; overflow: hidden; border: 1px solid var(--hair); background: #000; }
+    #card .media img, #card .media video { display: block; width: 100%; max-height: 14rem; object-fit: cover; }
+    #card .media.pair { display: grid; grid-template-columns: 1.55fr 1fr; gap: 2px; }
+    #card .media.pair img { height: 11.5rem; max-height: none; }
+    #card .media.tall video { max-height: min(27rem, 58vh); object-fit: contain; }
+    #card .links { font-family: var(--mono); font-size: 0.76rem; letter-spacing: 0.04em; display: flex; flex-wrap: wrap; gap: 0.35rem 1.1rem; }
+    .x { position: absolute; top: 0.7rem; right: 0.7rem; width: 2rem; height: 2rem; border-radius: 50%; border: 1px solid var(--hair); background: transparent; color: var(--ink-soft); font-size: 1rem; line-height: 1; cursor: pointer; }
+    .x:hover { color: var(--ink); border-color: var(--ink-dim); }
+
+    #card .media { cursor: zoom-in; }
+    .grow { background: transparent; color: var(--ink); border: 1px solid var(--ink-dim); border-radius: 999px; padding: 0.3rem 0.8rem; font: inherit; letter-spacing: inherit; cursor: pointer; }
+    .grow:hover { border-color: var(--ink); }
+    .grow:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+    /* ---------- larger view of one stop ---------- */
+    #big { width: min(74rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); padding: 0; border: 1px solid var(--hair); border-radius: 16px; background: var(--panel); color: var(--ink); overflow: auto; }
+    #big::backdrop { background: rgba(4, 6, 6, 0.8); backdrop-filter: blur(4px); }
+    #big .x { position: sticky; display: block; top: 1rem; margin: 1rem 1rem -3rem auto; z-index: 2; background: var(--panel); }
+    #big .info { padding-right: 0; }
+    #big-body > :first-child .k { margin-right: 2.5rem; }
+    #big-body { display: grid; grid-template-columns: minmax(17rem, 23rem) 1fr; gap: 2.2rem; padding: 2.2rem; align-items: start; }
+    #big-body.nomedia { grid-template-columns: minmax(0, 40rem); }
+    #big .info { position: sticky; top: 2.2rem; }
+    #big .k { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); margin: 0 0 0.7rem; }
+    #big h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 600; letter-spacing: -0.015em; line-height: 1.2; margin: 0 0 1rem; }
+    #big p { margin: 0 0 1rem; color: var(--ink-soft); font-size: 1.02rem; line-height: 1.65; }
+    #big .m { margin: 0 0 1.2rem; }
+    #big .m b { display: block; font-size: clamp(2.4rem, 5vw, 3.4rem); font-weight: 600; letter-spacing: -0.03em; line-height: 1; margin-bottom: 0.35rem; }
+    #big .m span { font-size: 0.9rem; color: var(--ink-soft); }
+    #big.sea .m b { color: var(--sea); }
+    #big.ai .m b { color: var(--ai); }
+    #big .cross { border-left: 2px solid var(--ai); padding-left: 0.85rem; }
+    #big .links { font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.04em; display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; }
+    #big .gallery { display: grid; gap: 0.9rem; }
+    #big .gallery img, #big .gallery video { display: block; width: 100%; height: auto; max-height: 82vh; object-fit: contain; border-radius: 10px; border: 1px solid var(--hair); background: #000; }
+
+    /* ---------- lower sections ---------- */
+    section { padding: 3rem 0 0.5rem; max-width: 44rem; }
+    section h2 { font-family: var(--mono); font-size: 0.72rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); border-top: 1px solid var(--hair); padding-top: 1.1rem; margin: 0 0 1.5rem; }
+    .list { list-style: none; padding: 0; margin: 0; }
+    .list li { margin: 0 0 1.1rem; color: var(--ink-soft); }
+    .list li b { color: var(--ink); font-weight: 600; }
+    .list .y { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; color: var(--ink-dim); display: block; }
+    .contact { font-family: var(--mono); font-size: 0.85rem; line-height: 2.1; }
+    footer { margin-top: 3rem; border-top: 1px solid var(--hair); padding: 1.5rem 0 3rem; font-family: var(--mono); font-size: 0.72rem; color: var(--ink-dim); letter-spacing: 0.04em; }
+
+    @media (max-width: 719px) {
+      #hud { padding: 1rem 1.1rem; }
+      #intros { top: auto; bottom: 3.4rem; right: 1.1rem; }
+      .mh { font-size: 0.78rem; }
+      .mh div { grid-template-columns: 4.4rem 1fr; }
+      .nm-lit { stroke-width: 2; }
+      .nm-glow { stroke-width: 7; }
+      #views { top: auto; bottom: 1rem; right: 1.1rem; }
+      #year { left: 1.1rem; }
+      .tag { padding: 0.4rem 0.6rem 0.45rem; }
+      .tag .n { font-size: 0.88rem; }
+      #card { right: 0; left: 0; bottom: 0; width: 100%; border-radius: 14px 14px 0 0; max-height: 75vh; }
+      #big { width: 100vw; max-width: 100vw; max-height: 100vh; height: 100vh; border-radius: 0; border: 0; margin: 0; }
+      #big-body { grid-template-columns: minmax(0, 1fr); gap: 1.2rem; padding: 1.2rem; }
+      #big .info { position: static; }
     }
 
-    @media (max-width: 480px) {
-      header { padding-top: 3rem; }
-      body { font-size: 16px; }
-      nav a { margin-right: 1rem; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .tag, .node, .ring, #hud, #intro { transition: none; }
+      .mh div { clip-path: none; animation: none !important; }
+      .mission .go { opacity: 1; animation: none !important; }
+      .cur, .sonar .go i { animation: none; }
+      .det-box, .det-label { transition: none; }
     }
   </style>
 </head>
 
 <body>
+  <div id="stage" aria-label="Career track, 2019 to now">
+    <div id="viewport">
+      <div id="world">
+        <canvas aria-hidden="true"></canvas>
+        <svg aria-hidden="true"></svg>
+        <div id="tags"></div>
+        <div id="intro"></div>
+      </div>
+      <div id="year" aria-hidden="true"></div>
+      <header id="hud">
+        <h1>Vinay Naidu</h1>
+      </header>
+      <div id="sweep" aria-hidden="true"></div>
+      <canvas id="fx" aria-hidden="true"></canvas>
+      <div id="views" role="group" aria-label="Chart view">
+        <button type="button" data-v="chart">Chart</button>
+        <button type="button" data-v="profile">Dive profile</button>
+      </div>
+    </div>
+  </div>
+  <noscript>
+    <p style="padding:1rem">The track needs JavaScript. The sections below list the same work.</p>
+  </noscript>
+
   <div class="wrap">
 
-    <header>
-      <h1>Vinay Naidu</h1>
-      <p class="oneliner">Robotics engineer &amp; researcher — governed memory for embodied AI · autonomous
-        underwater systems.</p>
-      <nav>
-        <a href="#research">Research</a>
-        <a href="#writing">Writing</a>
-        <a href="#robotics">Robotics</a>
-        <a href="#contact">Contact</a>
-      </nav>
-    </header>
-
-    <section id="research">
-      <h2 class="kicker">Research</h2>
-
-      <article class="entry">
-        <span class="date">2026</span>
-        <h3><a href="ergos/index.html">Ergos: A Developmental Ladder to a Governed Robot Mind</a></h3>
-        <p>A developmental ladder of kill-gated experiments with pre-registered bars — from symbol-birth on
-          raw pixels to a governed memory grafted onto a frozen OpenVLA-7B: taught in one typed sentence,
-          10/10 across a full restart against its twin's 0/10, certified deletion with a forgery caught,
-          honest refusal with zero false abstains. Two walls published as laws, including a pre-registration
-          that failed its own bar by one row and stands. Every number is a live-recorded receipt.</p>
-        <span class="more"><a href="ergos/index.html">Read the thesis →</a></span>
-        <figure>
-          <a href="ergos/index.html"><img src="ergos/assets/poster_index.jpg"
-              alt="Robot camera view: the bowl by the cookie box, named 'snackbowl' in one sentence" /></a>
-          <figcaption>frame from the demo film — one sentence names the bowl; the body is never retrained</figcaption>
-        </figure>
-      </article>
-
-      <article class="entry">
-        <span class="date">2023 – 26</span>
-        <h3>Ambiguity-Aware Acoustic Target Tracking on the Dragon AUV</h3>
-        <p>Bayesian estimation over hydrophone, sonar, and IMU with explicit ambiguity handling
-          (multi-hypothesis tracking). Reduced navigation drift 4× over 500 m trajectories. MS thesis work at
-          the Virginia Tech Center for Marine Autonomy.</p>
-        <span class="more"><a href="https://github.com/alucard1311/dragon_auv" target="_blank"
-            rel="noopener">code →</a></span>
-        <figure>
-          <img src="assets/dragon_auv_demo.gif" alt="Dragon AUV during acoustic tracking trials" loading="lazy" />
-          <figcaption>Dragon AUV during acoustic tracking trials</figcaption>
-        </figure>
-      </article>
-
-      <article class="entry">
-        <span class="date">2023 – 26</span>
-        <h3>Distributed Information Fusion for Multi-AUV Tracking</h3>
-        <p>Random-finite-set tracking across a team of AUVs with contact sharing and track-to-track
-          association — multiple vehicles maintaining one consistent picture of a moving target.</p>
-        <figure>
-          <img src="assets/multi_auv_tracking.gif" alt="Multi-AUV cooperative tracking simulation" />
-          <figcaption>cooperative tracking with contact sharing</figcaption>
-        </figure>
-      </article>
-
-      <article class="entry">
-        <span class="date">2023 – 26</span>
-        <h3>Methane Plume Segmentation from 3D Sonar on the 690 AUV</h3>
-        <p>A 3D sonar change-detection pipeline with decision-level fusion into probabilistic octree maps,
-          for localizing methane seeps on the seafloor.</p>
-        <span class="more"><a href="https://github.com/alucard1311/ism_plume_detection" target="_blank"
-            rel="noopener">code →</a></span>
-        <figure>
-          <img src="assets/sonar_change_detection.gif" alt="3D sonar change detection of a methane plume" />
-          <figcaption>sonar change detection, decision-level fusion</figcaption>
-        </figure>
-      </article>
-    </section>
-
-    <section id="writing">
-      <h2 class="kicker">Writing</h2>
-
-      <article class="entry">
-        <span class="date">July 2026</span>
-        <h3><a href="essays/inner-life/index.html">Raised, Not Manufactured</a></h3>
-        <p>An essay on giving machines an inner life — why today's models are brilliant amnesiacs, why
-          honesty must be structural rather than trained, why forgetting needs a receipt, and why the
-          machine worth building is raised, not manufactured.</p>
-        <span class="more"><a href="essays/inner-life/index.html">Read the essay →</a></span>
-      </article>
-    </section>
-
-    <section id="robotics">
-      <h2 class="kicker">Robotics</h2>
-      <div class="grid">
-
-        <div class="card">
-          <div class="media"><video src="assets/HyperHorizon.MP4" autoplay muted loop playsinline></video></div>
-          <h4>Underwater GNC Architecture — Alpha AUV</h4>
-          <p>Full-stack ROS architecture for an over-actuated AUV: simulation, helm control, GPS waypoint
-            navigation, sensor drivers.</p>
-          <span class="more"><a href="https://github.com/alucard1311/alpha_auv" target="_blank"
-              rel="noopener">code →</a></span>
-        </div>
-
-        <div class="card">
-          <div class="media"><video src="assets/sim-to-real.webm" autoplay muted loop playsinline></video></div>
-          <h4>Sim-to-Real Validation Pipeline</h4>
-          <p>Containerized SITL/HITL-style regression scenarios for repeatable controller tuning.</p>
-        </div>
-
-        <div class="card">
-          <div class="media contain"><img src="assets/auv_dragon.png" alt="Dragon AUV" /></div>
-          <h4>Dragon AUV</h4>
-          <p>Hydrophone array, AHRS, depth, GPS · Jetson Xavier, custom telemetry board · 50 m rated.</p>
-        </div>
-
-        <div class="card">
-          <div class="media contain"><img src="assets/auv_690.png" alt="690 Research AUV" /></div>
-          <h4>690 Research AUV</h4>
-          <p>3DSS side-scan sonar, DVL, camera · Jetson AGX, acoustic modem · 200 m rated.</p>
-        </div>
-
-        <div class="card">
-          <div class="media contain"><img src="assets/auv_hyperhorizon.png" alt="Hyper Horizon AUV" /></div>
-          <h4>Hyper Horizon AUV</h4>
-          <p>DVL, IMU, depth · Jetson Nano, Pixhawk, T200 thrusters · 500 m rated.</p>
-        </div>
-
-        <div class="card">
-          <div class="media"><img src="assets/astar.gif" alt="ROS2 Neural A* planner" /></div>
-          <h4>ROS2 Neural A*</h4>
-          <p>Learned-guidance A* planner plugin for ROS2 Nav2.</p>
-          <span class="more"><a href="https://github.com/alucard1311/ROS2-Nueral-AStar" target="_blank"
-              rel="noopener">code →</a></span>
-        </div>
-
-        <div class="card">
-          <div class="media"><img src="assets/enu-tf.gif" alt="ENU tangential plane transforms" /></div>
-          <h4>ENU-ROS Transform</h4>
-          <p>ROS package for ENU tangential-plane transformations.</p>
-          <span class="more"><a href="http://github.com/alucard1311/enu-ros-tf" target="_blank"
-              rel="noopener">code →</a></span>
-        </div>
-
-      </div>
-    </section>
-
-    <section id="contact">
-      <h2 class="kicker">Contact</h2>
-      <ul class="contact-list">
-        <li><a href="mailto:vinay@orpheusocean.com">vinay@orpheusocean.com</a></li>
-        <li><a href="https://linkedin.com/in/vinay-naidu" target="_blank" rel="noopener">linkedin.com/in/vinay-naidu</a></li>
-        <li><a href="https://github.com/alucard1311" target="_blank" rel="noopener">github.com/alucard1311</a></li>
+    <section id="publications">
+      <h2>Publications</h2>
+      <ul class="list">
+        <li><span class="y">IEEE/MTS OCEANS 2025</span><b>Autonomous Detection and Classification of Methane Bubble
+            Plumes using 3D Sonar</b><br />S. V. Naidu, D. J. Stilwell</li>
+        <li><span class="y">arXiv · May 2026</span><b><a href="https://arxiv.org/abs/2606.00382" target="_blank"
+              rel="noopener">CRMA: A Spectrally-Bounded Backbone for Modular Continual Fine-Tuning of
+              LLMs</a></b><br />K. Nayudu, A. Nutakki, S. V. Naidu, A. Shanmugasundaram</li>
       </ul>
     </section>
 
-    <footer>
-      Vinay Naidu · robot memory &amp; marine autonomy
-    </footer>
+    <section id="writing">
+      <h2>Writing</h2>
+      <ul class="list">
+        <li><span class="y">2026</span><b><a href="ergos/index.html">Ergos: A Developmental Ladder to a Governed Robot
+              Mind</a></b></li>
+        <li><span class="y">July 2026</span><b><a href="essays/inner-life/index.html">Raised, Not Manufactured</a></b>
+        </li>
+      </ul>
+    </section>
 
+    <section id="contact">
+      <h2>Contact</h2>
+      <div class="contact">
+        <a href="mailto:vinay@orpheusocean.com">vinay@orpheusocean.com</a><br />
+        <a href="https://www.linkedin.com/in/vinay-naidu-287b61177/" target="_blank" rel="noopener">LinkedIn</a><br />
+        <a href="https://github.com/alucard1311" target="_blank" rel="noopener">github.com/alucard1311</a>
+      </div>
+    </section>
+
+    <footer>Vinay Naidu · underwater autonomy &amp; AI</footer>
   </div>
+
+  <dialog id="big" aria-label="Project detail">
+    <button class="x" aria-label="Close larger view">×</button>
+    <div id="big-body"></div>
+  </dialog>
+
+  <aside id="card" hidden aria-live="polite">
+    <button class="x" aria-label="Close detail">×</button>
+    <div id="card-body"></div>
+  </aside>
+
+  <script>
+    /* ------------------------------------------------------------------
+       STOPS. Edit this list to change the chart.
+       t: "sea" | "ai" | "both"   row: position along the track, in time order
+    ------------------------------------------------------------------ */
+    const STOPS = [
+      { id: "sauvc", t: "sea", row: 0, date: "2019", name: "SAUVC",
+        where: "Singapore · 1.35°N 103.82°E", title: "Robotics lead, student AUV team",
+        text: "Led the robotics for a competition AUV at the Singapore Autonomous Underwater Vehicle Challenge, 8–11 March 2019. This is where it started.",
+        img: "assets/field/sauvc_vehicle.jpg" },
+      { id: "hh", t: "sea", row: 1, date: "2021", name: "Hyper Horizon",
+        where: "Hosur, India · 12.74°N 77.83°E", title: "Founding Autonomy/GNC Engineer",
+        text: "GNC, planning and sim-to-real test rigs for constrained underwater operations.",
+        m: "−40%", ml: "planner compute, from tighter map updates and pruning",
+        video: "assets/web/hyper_horizon.mp4", links: [["code", "https://github.com/alucard1311/alpha_auv"]] },
+      { id: "vt", t: "sea", row: 2, date: "2023", name: "Virginia Tech",
+        where: "Blacksburg, VA · 37.23°N 80.41°W", title: "Center for Marine Autonomy and Robotics",
+        text: "Graduate research in acoustic tracking, 3D sonar and multi-AUV fusion.",
+        video: "assets/web/vt_three_auvs.mp4" },
+      { id: "seeps", t: "sea", row: 3, date: "2024", name: "Cascadia seeps",
+        where: "Cascadia margin · VT-690 AUV", title: "Methane plume detection from 3D sonar",
+        text: "A pipeline that finds and boxes bubble plumes, with a geodetic position for each. Published at IEEE/MTS OCEANS 2025.",
+        m: "54–74 m", ml: "plume height picked out above the seafloor",
+        img: "assets/sonar_change_detection.gif", links: [["code", "https://github.com/alucard1311/ism_plume_detection"]] },
+      { id: "dragon", t: "sea", row: 4, date: "2025", name: "Dragon AUV",
+        where: "M.S. thesis", title: "Ambiguity-aware acoustic target tracking",
+        text: "Multi-hypothesis tracking over hydrophone, sonar and IMU. Dragon flooded and sank on one lake trial; we got it back.",
+        m: "4×", ml: "less navigation drift over 500 m runs (2.0 m to 0.5 m)",
+        video: "assets/web/dragon_auv.mp4", links: [["code", "https://github.com/alucard1311/dragon_auv"]] },
+      { id: "cl", t: "both", tone: "ai", row: 5, date: "2025", name: "Continual learning",
+        where: "Virginia Tech · with Dr. Lynn Abbott", title: "Continual learning and catastrophic forgetting",
+        text: "Research with Dr. Lynn Abbott on why a model forgets what it knew when it learns something new. The first step toward ModelBrew." },
+      { id: "grad", t: "sea", row: 6, date: "2025-12", name: "M.S. thesis graduation",
+        where: "Virginia Tech", title: "M.S. in Computer Engineering",
+        text: "Graduated from Virginia Tech. Thesis: Ambiguity-Aware Acoustic Target Tracking on the Dragon AUV." },
+      { id: "orpheus", t: "sea", row: 7, date: "2026-01", name: "Orpheus Ocean",
+        where: "Cape Cod, MA", title: "Senior Autonomy/GNC Engineer",
+        text: "Wrote the vehicle's navigation filter, guidance and mission behaviors, and the eelgrass sim they are tested in.",
+        m: "17", ml: "state EKF: IMU, DVL, depth, heading, GPS and USBL" },
+      { id: "patent", t: "ai", row: 8, date: "2026-02", name: "CRMA patent filing",
+        where: "US provisional patent application", title: "Patent application filed for CRMA",
+        text: "The continual fine-tuning method behind CRMA went into a US provisional patent application, filed in February 2026." },
+      { id: "crma", t: "ai", row: 9, date: "2026-05", name: "CRMA",
+        where: "arXiv:2606.00382", title: "Continual fine-tuning without forgetting",
+        text: "Adds new domains to a model without overwriting old ones. Mistral-7B, five domains in sequence, three seeds.",
+        m: "−0.17%", ml: "drift on earlier domains; plain fine-tuning drifted +43%",
+        links: [["paper", "https://arxiv.org/abs/2606.00382"]] },
+      { id: "modelbrew", t: "ai", row: 10, date: "2026", name: "ModelBrew",
+        where: "Frederick, MD · 39.41°N 77.41°W", title: "ModelBrew: the method becomes a product",
+        text: "Co-founded on top of CRMA: one tool for the whole fine-tuning cycle, from cleaning data to tuning, evaluating and serving a model." },
+      { id: "mitre", t: "sea", row: 11, date: "2026-07", name: "MITRE tank",
+        where: "Bedford, MA · 42.49°N 71.28°W", title: "GPS-denied navigation vs motion capture",
+        text: "The navigation filter scored against optical motion capture in the MITRE BlueTech tank.",
+        m: "7 cm", ml: "mean cross-track error; 15 cm at the 95th percentile",
+        video: "assets/field/mitre_tank.mp4", img: "assets/field/mitre_bluetech_lab.jpg" },
+      { id: "ergos", t: "ai", row: 12, date: "2026", name: "Ergos",
+        where: "Research thesis", title: "A governed memory for a robot",
+        text: "Memory grafted onto a frozen robot model: taught in one typed sentence, kept across a restart, deleted with a certificate.",
+        m: "10/10", ml: "recalled after a full restart; its twin scored 0/10",
+        img: "ergos/assets/poster_index.jpg",
+        links: [["thesis", "ergos/index.html"], ["essay", "essays/inner-life/index.html"]] },
+      { id: "hyannis", t: "sea", row: 13, cross: true, date: "2026-07", name: "Hyannis survey",
+        where: "Hyannis, MA · 41.65°N 70.28°W", title: "InnovateMass eelgrass survey",
+        text: "For MassCEC and Avangrid: 6.7 hours of survey, 40 of 48 lines, 43,000 seafloor images.",
+        m: "6.8 km", ml: "underwater at 0.70 m altitude, ±0.06 m",
+        crossText: "Where the paths cross. The survey images were color-restored with a GAN, and the decision layer was replayed on the July 30 dive.",
+        video: "assets/field/eelgrass_survey.mp4",
+        imgs: [["assets/field/eelgrass_track_map.jpg", "100% 100%"], "assets/field/eelgrass_mosaic.jpg"] },
+      { id: "bluetide", t: "sea", row: 14, date: "2026-08", name: "Blue Tide",
+        where: "NUWC Newport, RI · 41.49°N 71.31°W", title: "Networked undersea operations",
+        text: "Retasked acoustically while submerged, and live on Anduril Lattice.",
+        m: "0.23 m", ml: "off the bottom, held for 9 minutes",
+        imgs: [["assets/field/bluetide_launch.jpg", "0% 50%"], "assets/field/bluetide_crane.jpg"] },
+      { id: "antx", t: "sea", row: 15, date: "2026-09", name: "ANTX",
+        where: "Port Hueneme, CA · 34.15°N 119.20°W", title: "Autonomous seabed sampling",
+        text: "Dropped its weights, landed with no GPS, took both cores and came home, reporting over the acoustic modem all the way.",
+        m: "10.6 min", ml: "splash to surface, with two cores aboard",
+        imgs: ["assets/field/antx_recovery.jpg", "assets/field/antx_crane.jpg"] },
+      { id: "decision", t: "ai", row: 16, date: "2026-09", name: "Decision layer",
+        where: "Replayed on the July 30 survey", title: "A decision layer that shows its work",
+        text: "Every sighting goes into an append-only ledger. A find is flagged only when an outside checker can replay why.",
+        m: "160", ml: "cells certified clear of the target" },
+      { id: "fly", t: "ai", row: 17, date: "2026-10", name: "Fly brain",
+        where: "Ergos · fly research", title: "Can experience change this fly?",
+        text: "A physics simulation of a fly, driven by the published connectome. After one smell is paired with a bitter taste, the brain's response to that smell weakens. The response to an unpaired smell weakens too, and fixing that is the next test.",
+        m: "165,122", ml: "modeled neurons",
+        video: "assets/web/fly_film.mp4", tall: true },
+      { id: "now", t: "both", row: 18.4, date: "now", name: "Paths merge",
+        where: "Next leg", title: "AI-driven exploration",
+        text: "One track from here: vehicles that learn each new seafloor onboard, and back every flagged target with evidence a geologist can check." }
+    ];
+    const END_LABEL = "Next leg · AI-driven exploration";
+
+    /* ---------- setup ---------- */
+    const NS = "http://www.w3.org/2000/svg";
+    const stage = document.getElementById("stage"), vp = document.getElementById("viewport"), world = document.getElementById("world");
+    const svg = world.querySelector("svg"), canvas = world.querySelector("canvas"), tagsEl = document.getElementById("tags");
+    const hud = document.getElementById("hud"), yearEl = document.getElementById("year");
+    const card = document.getElementById("card"), cardBody = document.getElementById("card-body");
+    const el = (n, a = {}) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+    const lerp = (a, b, t) => a + (b - a) * t;
+    const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+    const hash = (i, j) => { let h = (i * 374761393 + j * 668265263) ^ 0x5bd1e995; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967295; };
+    const sm = t => t * t * (3 - 2 * t);
+    const vn = (x, y) => { const i = Math.floor(x), j = Math.floor(y), u = sm(x - i), v = sm(y - j); return (hash(i, j) * (1 - u) + hash(i + 1, j) * u) * (1 - v) + (hash(i, j + 1) * (1 - u) + hash(i + 1, j + 1) * u) * v; };
+
+    const qs = new URLSearchParams(location.search);
+    let VIEW = qs.get("v") === "profile" ? "profile" : "chart";   // "chart" | "profile"
+    let INTRO = qs.get("intro") === "sonar" ? "sonar" : "mission";   // opening style: "mission" | "sonar"
+    const STEP = 6;
+    let L = null, openId = null, lastFocus = null;
+
+    /* ---------- geometry helpers ---------- */
+    const SPEED = 1.3;                       // track pixels travelled per pixel scrolled
+    const dist = (a, b) => Math.hypot(b.x - a.x, b.y - a.y);
+    const row = id => STOPS.find(s => s.id === id).row;
+
+    // round the corners of a waypoint route, like a vehicle with a turn radius
+    function fillet(v, R) {
+      const out = [v[0]];
+      for (let i = 1; i < v.length - 1; i++) {
+        const a = v[i - 1], p = v[i], b = v[i + 1], d1 = dist(a, p), d2 = dist(p, b);
+        const r = Math.min(p.r ?? R, d1 / 2, d2 / 2);
+        if (!(r >= 1.5)) { out.push(p); continue; }
+        const p1 = { x: p.x + (a.x - p.x) / d1 * r, y: p.y + (a.y - p.y) / d1 * r };
+        const p2 = { x: p.x + (b.x - p.x) / d2 * r, y: p.y + (b.y - p.y) / d2 * r };
+        for (let k = 0; k <= 8; k++) { const t = k / 8, m = 1 - t; out.push({ x: m * m * p1.x + 2 * m * t * p.x + t * t * p2.x, y: m * m * p1.y + 2 * m * t * p.y + t * t * p2.y }); }
+      }
+      out.push(v[v.length - 1]); return out;
+    }
+    function resample(poly, step) {
+      const pts = [poly[0]]; let carry = 0;
+      for (let i = 1; i < poly.length; i++) {
+        const a = poly[i - 1], b = poly[i], d = dist(a, b); if (!d) continue;
+        let t = step - carry;
+        while (t <= d) { pts.push({ x: a.x + (b.x - a.x) * t / d, y: a.y + (b.y - a.y) * t / d }); t += step; }
+        carry = d - (t - step);
+      }
+      return pts;
+    }
+    const arc = (c, r, a0, a1, n = 20) => Array.from({ length: n + 1 }, (_, i) => { const t = (a0 + (a1 - a0) * i / n) * Math.PI / 180; return { x: c.x + r * Math.cos(t), y: c.y + r * Math.sin(t), r: 0 }; });
+    const interp = (arr, kx, ky, x) => {
+      if (x <= arr[0][kx]) return arr[0][ky];
+      for (let i = 1; i < arr.length; i++) if (x <= arr[i][kx]) { const a = arr[i - 1], b = arr[i]; return lerp(a[ky], b[ky], (x - a[kx]) / ((b[kx] - a[kx]) || 1)); }
+      return arr[arr.length - 1][ky];
+    };
+
+    /* ---------- the name, written as the vehicle's first track ---------- */
+    const GLYPH = {
+      " ": [0.5, null],
+      V: [1, [[0, 0], [0.5, 1], [1, 0]]],
+      I: [0, [[0, 0], [0, 1]]],
+      N: [0.85, [[0, 1], [0, 0], [1, 1], [1, 0]]],
+      A: [1, [[0, 1], [0.5, 0], [1, 1], [0.78, 0.56], [0.22, 0.56]]],
+      Y: [1, [[0, 0], [0.5, 0.5], [1, 0], [0.5, 0.5], [0.5, 1]]],
+      D: [0.8, [[0, 0], [0, 1], [0.4, 1], ...Array.from({ length: 13 }, (_, i) => { const t = (90 - i * 15) * Math.PI / 180; return [0.4 + 0.6 * Math.cos(t), 0.5 + 0.5 * Math.sin(t)]; }), [0, 0]]],
+      U: [0.85, [[0, 0], [0, 0.6], ...Array.from({ length: 13 }, (_, i) => { const t = (180 - i * 15) * Math.PI / 180; return [0.5 + 0.5 * Math.cos(t), 0.6 + 0.4 * Math.sin(t)]; }), [1, 0]]]
+    };
+    const ASPECT = 0.72, GAP = 0.28, LINEGAP = 0.4;
+    const nameNat = t => [...t].reduce((w, c) => w + GLYPH[c][0] * ASPECT, 0) + (t.length - 1) * GAP;
+    function buildName(lines, endX, top, maxW, maxH) {
+      const natW = t => [...t].reduce((w, c) => w + GLYPH[c][0] * ASPECT, 0) + (t.length - 1) * GAP;
+      const H = Math.min(maxH, maxW / Math.max(...lines.map(natW)));
+      const left = endX - natW(lines[lines.length - 1]) * H;
+      const segs = [], path = []; let s = 0;
+      lines.forEach((t, li) => {
+        let ox = left; const oy = top + li * H * (1 + LINEGAP);
+        [...t].forEach(c => {
+          if (!GLYPH[c][1]) { ox += (GLYPH[c][0] * ASPECT + GAP) * H; return; }
+          const [gw, g] = GLYPH[c], pts = g.map(([x, y]) => ({ x: ox + x * gw * ASPECT * H, y: oy + y * H }));
+          if (path.length) s += dist(path[path.length - 1], pts[0]);          // pen-up transit to the next letter
+          let len = 0; for (let i = 1; i < pts.length; i++) len += dist(pts[i - 1], pts[i]);
+          segs.push({ pts, s0: s, len }); s += len; path.push(...pts);
+          ox += (gw * ASPECT + GAP) * H;
+        });
+      });
+      const cum = [0]; for (let i = 1; i < path.length; i++) cum.push(cum[i - 1] + dist(path[i - 1], path[i]));
+      const right = left + Math.max(...lines.map(natW)) * H;
+      return { segs, path, cum, total: s, end: path[path.length - 1], left, right, top, bottom: top + H * (lines.length + (lines.length - 1) * LINEGAP), H };
+    }
+    function nameAt(N, s) {
+      let i = 1; while (i < N.cum.length - 1 && N.cum[i] < s) i++;
+      const a = N.path[i - 1], b = N.path[i], t = clamp((s - N.cum[i - 1]) / ((N.cum[i] - N.cum[i - 1]) || 1));
+      return { x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t), ang: Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI };
+    }
+    function setName(N, s) {
+      N.segs.forEach(g => { const l = clamp(s - g.s0, 0, g.len), da = `${l} ${g.len + 20}`;
+        [g.lit, g.glow].forEach(e => { e.style.visibility = l > 0.5 ? "" : "hidden"; e.setAttribute("stroke-dasharray", da); }); });
+    }
+    let introDone = false, L_label = null;
+    function runIntro() {
+      const N = L.name, sweep = document.getElementById("sweep"), fx = document.getElementById("fx");
+      const place = q => L.auv.setAttribute("transform", `translate(${q.x.toFixed(1)},${q.y.toFixed(1)}) rotate(${q.ang.toFixed(1)})`);
+      const finish = () => { introDone = true; setName(N, N.total); world.style.clipPath = ""; sweep.style.display = "none"; fx.style.opacity = 0; world.classList.add("ready"); update(); };
+      L.finishIntro = finish;
+      if (introDone || scrollY > 4 || matchMedia("(prefers-reduced-motion: reduce)").matches) return finish();
+      const t0 = performance.now();
+      if (INTRO === "sonar") {
+        // a sonar sweep crosses the screen and paints the scene in behind it
+        const dur = 2800, g = fx.getContext("2d"); fx.width = L.VW; fx.height = L.VH; fx.style.opacity = 1;
+        setName(N, N.total); place(nameAt(N, N.total)); sweep.style.display = "block";
+        const step = now => {
+          if (introDone) return;
+          const p = clamp((now - t0) / dur), x = lerp(-10, L.VW + 60, p);
+          sweep.style.transform = `translateX(${(x - 180).toFixed(1)}px)`;
+          world.style.clipPath = `inset(0 ${Math.max(0, L.WW - (x - L.tx)).toFixed(1)}px 0 0)`;
+          g.globalCompositeOperation = "destination-out"; g.fillStyle = "rgba(0,0,0,0.07)"; g.fillRect(0, 0, fx.width, fx.height);
+          g.globalCompositeOperation = "source-over";
+          for (let i = 0; i < 46; i++) { g.fillStyle = `rgba(190,255,240,${(0.15 + Math.random() * 0.5).toFixed(2)})`; const r = Math.random() < 0.08 ? 2.2 : 1.1; g.fillRect(x - Math.random() * Math.random() * 90, Math.random() * fx.height, r, r); }
+          p < 1 ? requestAnimationFrame(step) : finish();
+        };
+        world.style.clipPath = `inset(0 ${L.WW}px 0 0)`; requestAnimationFrame(step);
+      } else {
+        // the vehicle writes the name, then the console prints the header
+        const dur = 3200;
+        const step = now => {
+          if (introDone) return;
+          const p = clamp((now - t0) / dur), e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+          setName(N, e * N.total); place(nameAt(N, e * N.total));
+          p < 1 ? requestAnimationFrame(step) : finish();
+        };
+        setName(N, 0); requestAnimationFrame(step);
+      }
+    }
+
+    /* ---------- view 1: chart. Straight legs between waypoints, with the manoeuvre each stop is known for ---------- */
+    function buildChart(G) {
+      const { VH, X, uOf, uEnd, k } = G, Y = f => VH * f;
+      const yf = { sauvc: 0.64, hh: 0.5, vt: 0.63, dragon: 0.62, seeps: 0.5, cl: 0.5, grad: 0.58, orpheus: 0.69, mitre: 0.61, hyannis: 0.5, octans: 0.75, bluetide: 0.62, antx: 0.73, now: 0.52,
+        patent: 0.27, crma: 0.35, modelbrew: 0.24, ergos: 0.33, decision: 0.33, fly: 0.26 };
+      const A = id => ({ x: X(uOf(row(id))), y: Y(yf[id]) });
+      const v = [], decor = [], tag = {};
+      const go = (x, y, r) => v.push({ x, y, r });
+      const lap = (a, w, h) => { go(a.x, a.y); go(a.x + w, a.y, 9); go(a.x + w, a.y - h, 9); go(a.x, a.y - h, 9); go(a.x, a.y, 9);
+        decor.push({ t: "rect", x: a.x - 13, y: a.y - h - 13, w: w + 26, h: h + 26 }); };
+
+      // SAUVC: a lap of the competition pool
+      const sv = A("sauvc"); go(G.nameEnd.x, G.nameEnd.y, 0); go(sv.x - 40 * k, G.nameEnd.y, 44 * k); lap(sv, 96 * k, 56 * k); tag.sauvc = { below: true };
+
+      // Hyper Horizon: a planned leg that swerves around two obstacles
+      const hh = A("hh"), vt = A("vt"); go(hh.x, hh.y);
+      { const d = dist(hh, vt), nx = -(vt.y - hh.y) / d, ny = (vt.x - hh.x) / d, r = 15 * k;
+        [[0.36, 1], [0.68, -1]].forEach(([t, sgn]) => { const o = { x: lerp(hh.x, vt.x, t), y: lerp(hh.y, vt.y, t) };
+          decor.push({ t: "circle", x: o.x, y: o.y, r }); go(o.x + nx * (r + 14) * sgn, o.y + ny * (r + 14) * sgn, 30 * k); }); }
+      go(vt.x, vt.y); tag.vt = { below: true };
+
+      // Cascadia seeps: a racetrack, two sonar passes beside the plume
+      const se = A("seeps"), L = 64 * k, q = 15 * k;
+      go(se.x, se.y); go(se.x + L, se.y, 0); v.push(...arc({ x: se.x + L, y: se.y - q }, q, 90, -90, 12));
+      go(se.x, se.y - 2 * q, 0); v.push(...arc({ x: se.x, y: se.y - q }, q, -90, -270, 12));
+      [0, 1, 2].forEach(i => decor.push({ t: "dot", x: se.x + L / 2 + (i - 1) * 3, y: se.y - q + 6 - i * 6, r: 1.6 })); tag.seeps = { dx: L / 2, dy: -(2 * q + 18) };
+
+      // Dragon: circling an acoustic target
+      const dr = A("dragon"), rr = 30 * k, dc = { x: dr.x, y: dr.y - rr };
+      go(dr.x, dr.y, 0); v.push(...arc(dc, rr, 90, -270, 30)); decor.push({ t: "cross", x: dc.x, y: dc.y }); tag.dragon = { dy: -(2 * rr + 20) };
+
+      const cl = A("cl"); go(cl.x, cl.y);            // where the AI path begins
+      const gr = A("grad"); go(gr.x, gr.y); tag.grad = { below: true };
+      const or = A("orpheus"); go(or.x, or.y); tag.orpheus = { below: true };
+
+      // MITRE: a lap of the test tank
+      const mi = A("mitre"); lap(mi, 84 * k, 44 * k); tag.mitre = { below: true };
+
+      // Hyannis: the lawnmower survey
+      const hy = A("hyannis"), Lh = VH * 0.17, sp = 15 * k, n = 7;
+      for (let i = 0; i < n; i++) { const x = hy.x + i * sp, top = hy.y, bot = hy.y + Lh; i % 2 ? (go(x, bot, sp / 2), go(x, top, sp / 2)) : (go(x, top, i ? sp / 2 : 0), go(x, bot, sp / 2)); }
+      tag.hyannis = { below: true, dx: (n - 1) * sp / 2, dy: Lh + 16 };
+
+      // Blue Tide: retasked mid-mission. The dashed stub is the leg it was on.
+      const bt = A("bluetide"); { const o2 = v[v.length - 1], d = dist(o2, bt), ux = (bt.x - o2.x) / d, uy = (bt.y - o2.y) / d;
+        decor.push({ t: "ghost", x1: bt.x, y1: bt.y, x2: bt.x + ux * 96 * k, y2: bt.y + uy * 96 * k }); }
+      go(bt.x, bt.y, 6);
+
+      // ANTX: touchdown on the seabed
+      const an = A("antx"); go(an.x, an.y, 4); decor.push({ t: "circle", x: an.x, y: an.y, r: 12 }, { t: "circle", x: an.x, y: an.y, r: 19 }); tag.antx = { below: true };
+
+      const nw = A("now"); go(nw.x, nw.y);
+
+      // AI route: plain legs, one touch at the Hyannis survey
+      const aiV = [cl, { x: gr.x, y: gr.y - 30 * k }, A("patent"), A("crma"), A("modelbrew"), A("ergos"), { x: hy.x, y: hy.y, r: 0 }, { x: X(uOf(row("hyannis") + 1.45)), y: Y(0.28) }, A("decision"), A("fly"), nw];
+      const anchors = {}; STOPS.forEach(s => anchors[s.id] = A(s.id));
+      return { sea: fillet(v, 42 * k), ai: fillet(aiV, 46 * k), fut: [nw, { x: X(uEnd), y: nw.y }], decor, anchors, tag };
+    }
+
+    /* ---------- view 2: dive profile. Depth against time, following the seabed ---------- */
+    function buildProfile(G) {
+      const { VH, X, uOf, uEnd, COL, uG, uGr, uN, seabed } = G, surf = VH * 0.27, U = id => uOf(row(id));
+      const plate = (u, c, hw, e) => smooth(c - hw - e, c - hw, u) * (1 - smooth(c + hw, c + hw + e, u));
+      const alt = u => {
+        let a = 0.12;
+        a = lerp(a, 0, plate(u, U("dragon") + 0.42 * COL, 0.03 * COL, 0.16 * COL));        // Dragon sank, and was recovered
+        a = lerp(a, 0.05, plate(u, U("hyannis") + 0.3 * COL, 0.3 * COL, 0.15 * COL));     // low-altitude survey
+        a = lerp(a, 0.02, plate(u, U("bluetide"), 0.16 * COL, 0.14 * COL));               // hover just off the bottom
+        a = lerp(a, 0, plate(u, U("antx"), 0.03 * COL, 0.2 * COL));                       // touchdown
+        return a;
+      };
+      const fix = u => 0;
+      const seaY = u => lerp(surf, lerp(seabed(u) - VH * alt(u), surf + 3, fix(u)), smooth(0, 0.85 * COL, u));
+      const aiBase = u => VH * (0.45 + 0.03 * Math.sin(u / COL * 1.3)), uX = U("hyannis");
+      const off = u => 16 * smooth(uG, uG + 0.3 * COL, u) * (1 - smooth(uGr + 0.4 * COL, uGr + 1.1 * COL, u));   // runs beside the main track until graduation
+      const aiY = u => -off(u) + lerp(aiBase(u), seaY(u), Math.max(1 - smooth(uGr, uGr + 1.1 * COL, u), Math.exp(-(((u - uX) / (0.33 * COL)) ** 2)), smooth(uN - 1.3 * COL, uN, u)));
+      const line = (f, u0, u1) => { const o = []; for (let u = u0; ; u += 5) { const uu = Math.min(u, u1); o.push({ x: X(uu), y: f(uu), r: 0 }); if (uu >= u1) break; } return o; };
+      const anchors = {}; STOPS.forEach(s => { const u = uOf(s.row); anchors[s.id] = { x: X(u), y: s.t === "ai" ? aiY(u) : seaY(u) }; });
+      const decor = [];
+      return { sea: [{ ...G.nameEnd, r: 0 }, ...line(seaY, 0, uN)], ai: line(aiY, uG, uN), fut: line(seaY, uN, uEnd), decor, anchors, tag: { hyannis: { dx: -112 } } };
+    }
+
+    /* ---------- layout: the vehicle travels left to right ---------- */
+    function layout() {
+      const VW = vp.clientWidth, VH = vp.clientHeight, mobile = VW < 720, k = mobile ? 0.8 : 1;
+      const COL = mobile ? 190 : 260, LEAD = 0.9 * COL;
+      const uOf = r => LEAD + r * COL;
+      const uG = uOf(row("cl")), uGr = uOf(row("grad")), uN = uOf(row("now"));
+      const lines = ["VINAY NAIDU"], nameH = mobile ? 24 : 44, margin = Math.max(24, VW * 0.07);
+      const HERO = clamp((margin + nameNat(lines[0]) * nameH + 58) / VW, 0.25, 0.88);   // where the vehicle sits on screen before you scroll
+      const uEnd = uN + Math.max(0.42 * VW, 260), PADX = HERO * VW + 90, WW = Math.ceil(uEnd + PADX + VW * 0.5 + 40);
+      const X = u => PADX + u;
+      const seabed = u => VH * (0.82 + 0.05 * (vn(u / 420, 3) * 2 - 1) + 0.02 * (vn(u / 130, 9) * 2 - 1)) + VH * 0.2 * smooth(uN + 0.1 * COL, uEnd + VW * 0.5, u);
+      const surf = VH * 0.27, profile = VIEW === "profile";
+      const N = buildName(lines, X(0) - 56, 0, 1e9, nameH);
+      const dy = profile ? (surf - nameH) / 2 + 10 : VH * (mobile ? 0.15 : 0.2);
+      [N.path, ...N.segs.map(g => g.pts)].forEach(a => a.forEach(p => { if (!p._m) { p.y += dy; p._m = 1; } })); N.top += dy; N.bottom += dy;
+      const G = { VW, VH, X, uOf, uG, uGr, uN, uEnd, COL, k, seabed, nameEnd: { x: N.end.x + 44, y: N.end.y } };
+      N.path.push(G.nameEnd); N.cum.push(N.total + 44); N.total += 44;   // the vehicle pulls clear of the last letter
+      const svX = X(uOf(0));
+      const B = VIEW === "profile" ? buildProfile(G) : buildChart(G);
+
+      world.style.width = WW + "px";
+      svg.setAttribute("viewBox", `0 0 ${WW} ${VH}`);
+      svg.innerHTML = ""; tagsEl.innerHTML = ""; if (L_label) { L_label.remove(); L_label = null; }
+
+      // the name
+      const defs = el("defs"), lg = el("linearGradient", { id: "nmg", gradientUnits: "userSpaceOnUse", x1: N.left, y1: 0, x2: N.right, y2: 0 });
+      lg.append(el("stop", { offset: "0.15", style: "stop-color: var(--sea)" }), el("stop", { offset: "1", style: "stop-color: var(--ai)" }));
+      defs.append(lg); svg.append(defs);
+      N.segs.forEach(g => { const d = "M" + g.pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L");
+        g.glow = el("path", { d, class: "nm-glow" }); g.lit = el("path", { d, class: "nm-lit" }); svg.append(g.glow, g.lit); });
+      const intro = document.getElementById("intro");
+      const pad = 14, sonar = INTRO === "sonar";
+      intro.className = INTRO;
+      intro.innerHTML = sonar
+        ? `<p class="sig"><span class="s">Underwater autonomy</span> × <span class="a">AI</span></p><p class="go">Scroll to launch <i>→</i></p>`
+        : `<dl class="mh">
+             <div style="--i:0"><dt>Role</dt><dd>Senior Autonomy/GNC Engineer · Orpheus Ocean</dd></div>
+             <div style="--i:1"><dt>Mission</dt><dd><span class="s">Underwater autonomy</span> × <span class="a">AI</span></dd></div>
+             <div style="--i:2"><dt>Nav</dt><dd>0.67% dead-reckoning error · 7 cm cross-track</dd></div>
+             <div style="--i:3"><dt>Log</dt><dd>2019 → now · 5 field campaigns in 2026</dd></div>
+           </dl><p class="go">&gt; Ready. Scroll to launch<i class="cur"></i></p>`;
+      if (sonar) {   // boxed and labelled like a detection in a sonar image
+        const x0 = N.left - pad, y0 = N.top - pad, x1 = N.right + pad, y1 = N.bottom + pad, c = 20;
+        svg.append(el("path", { class: "det-box", d: `M${x0},${y0 + c} V${y0} H${x0 + c} M${x1 - c},${y0} H${x1} V${y0 + c} M${x1},${y1 - c} V${y1} H${x1 - c} M${x0 + c},${y1} H${x0} V${y1 - c}` }));
+        const dl = document.createElement("div"); dl.className = "det-label"; dl.textContent = "Detected · Senior Autonomy/GNC Engineer";
+        dl.style.left = x0 + "px"; dl.style.top = (y0 - 6) + "px"; intro.after(dl); L_label = dl;
+      }
+      intro.style.left = N.left + "px"; intro.style.top = (profile ? Math.max(surf + 40, N.bottom + pad + 26) : N.bottom + (sonar ? pad + 28 : 36)) + "px";
+      intro.style.width = Math.max(240, profile ? N.end.x - N.left - 20 : Math.min(560, svX - 64 - N.left, VW - margin * 2)) + "px";
+
+      // markers that explain a manoeuvre: pool walls, obstacles, targets, GPS fixes
+      B.decor.forEach(d => {
+        if (d.t === "rect") svg.append(el("rect", { x: d.x, y: d.y, width: d.w, height: d.h, rx: 5, class: "decor" }));
+        else if (d.t === "circle") svg.append(el("circle", { cx: d.x, cy: d.y, r: d.r, class: "decor" }));
+        else if (d.t === "dot") svg.append(el("circle", { cx: d.x, cy: d.y, r: d.r, class: "decor fill" }));
+        else if (d.t === "sq") svg.append(el("rect", { x: d.x - 4, y: d.y - 4, width: 8, height: 8, class: "decor sq" }));
+        else if (d.t === "cross") svg.append(el("path", { d: `M${d.x - 5},${d.y} h10 M${d.x},${d.y - 5} v10`, class: "decor" }));
+        else if (d.t === "ghost") svg.append(el("line", { x1: d.x1, y1: d.y1, x2: d.x2, y2: d.y2, class: "decor ghost" }));
+      });
+
+      const mk = (poly, cls) => {
+        const pts = resample(poly, STEP), d = "M" + pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L");
+        const tr = { pts, total: (pts.length - 1) * STEP };
+        svg.append(el("path", { d, class: "base" }));
+        tr.glow = el("path", { d, class: "glow " + cls }); tr.lit = el("path", { d, class: "lit " + cls });
+        svg.append(tr.glow, tr.lit); return tr;
+      };
+      const ai = mk(B.ai, "ai-c"), sea = mk(B.sea, "sea-c");
+      svg.append(el("path", { d: "M" + B.fut.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L"), class: "future" }));
+
+      // where each stop sits along its track
+      const locate = (tr, p, from) => {
+        let best = from, bd = Infinity;
+        for (let i = from; i < tr.pts.length; i++) { const d = dist(tr.pts[i], p); if (d < bd) { bd = d; best = i; } if (d <= STEP * 0.75) return i; }
+        return best;
+      };
+      const seaAn = [{ row: -LEAD / COL, s: 0 }], aiAn = [];
+      let si = 0, ai_i = 0;
+      const nodes = [];
+      STOPS.forEach(s => {
+        const isAi = s.t === "ai", cls = s.tone || (isAi ? "ai" : "sea"), tr = isAi ? ai : sea, a = B.anchors[s.id];
+        let p, sSea = null;
+        if (isAi) { ai_i = locate(ai, a, ai_i); p = ai.pts[ai_i]; aiAn.push({ row: s.row, s: ai_i * STEP }); }
+        else {
+          si = s.id === "now" ? sea.pts.length - 1 : locate(sea, a, si); p = sea.pts[si]; sSea = si * STEP; seaAn.push({ row: s.row, s: sSea });
+          if (s.t === "both" || s.cross) { ai_i = s.id === "cl" ? 0 : s.id === "now" ? ai.pts.length - 1 : locate(ai, a, ai_i); aiAn.push({ row: s.row, s: ai_i * STEP }); }
+        }
+        const o = B.tag[s.id] || {}, below = !!o.below, gap = 22;
+        const tx = p.x + (o.dx || 0), ty = o.dy ? p.y + o.dy : below ? p.y + gap : p.y - gap;
+        if (!o.dx && !o.dy) svg.append(el("line", { x1: p.x, y1: p.y, x2: p.x, y2: ty, class: "stem" }));
+        let ring = null;
+        if (s.cross || s.t === "both") { ring = el("circle", { cx: p.x, cy: p.y, r: 12, class: "ring" }); svg.append(ring); }
+        const node = el("circle", { cx: p.x, cy: p.y, r: s.t === "both" ? 7 : 5.5, class: "node " + cls });
+        svg.append(node);
+
+        const b = document.createElement("button");
+        b.className = "tag " + cls + (below ? " below" : ""); b.type = "button";
+        b.setAttribute("aria-expanded", "false");
+        b.innerHTML = `<span class="d">${esc(s.date)}</span><span class="n">${esc(s.name)}</span>`;
+        b.style.left = tx + "px"; b.style.top = ty + "px";
+        b.addEventListener("click", () => toggle(s.id, b));
+        nodes.push({ s, isAi, sSea, row: s.row, node, ring, b });
+        tagsEl.append(b);
+      });
+      // a stop on the AI track lights up when the vehicle reaches the same point in time
+      nodes.forEach(n => { n.at = n.isAi ? interp(seaAn, "row", "s", n.row) : n.sSea;
+        n.b.addEventListener("focus", () => { if (n.b.matches(":focus-visible")) scrollTo({ top: stage.offsetTop + n.at / SPEED, behavior: "auto" }); }); });
+
+      const lab = document.createElement("div");
+      lab.className = "endlabel"; lab.textContent = END_LABEL;
+      const fm = B.fut[Math.floor(B.fut.length / 2)], f0 = B.fut[0], f1 = B.fut[B.fut.length - 1];
+      lab.style.left = (f0.x + f1.x) / 2 + "px"; lab.style.top = (Math.min(fm.y, (f0.y + f1.y) / 2) - 18) + "px";
+      tagsEl.append(lab);
+
+      // the camera follows the vehicle's forward progress, so it holds still while the vehicle runs a pattern
+      const cam = new Float32Array(sea.pts.length); let mx = -Infinity;
+      sea.pts.forEach((p, i) => { mx = Math.max(mx, p.x); cam[i] = mx; });
+      const pre = new Float64Array(cam.length + 1); cam.forEach((c, i) => pre[i + 1] = pre[i] + c);
+      const Wn = 28; sea.cam = Array.from(cam, (_, i) => { const a = Math.max(0, i - Wn), b = Math.min(cam.length - 1, i + Wn); return (pre[b + 1] - pre[a]) / (b - a + 1); });
+
+      const aiHead = el("g"); aiHead.append(el("circle", { r: 12, class: "halo", fill: "var(--ai)" }), el("circle", { r: 4.5, class: "aidot" }));
+      const auv = el("g", { class: "auv" });
+      auv.append(
+        el("circle", { r: 26, class: "halo", fill: "var(--sea)" }),
+        el("path", { class: "hull", d: "M-23,-3.6 L12,-3.6 Q22,-3.6 26,0 Q22,3.6 12,3.6 L-23,3.6 Q-26,0 -23,-3.6 Z M-22,-3.6 L-27,-8.5 L-22.5,-8.5 L-16,-3.6 Z M-22,3.6 L-27,8.5 L-22.5,8.5 L-16,3.6 Z" }),
+        el("rect", { class: "hull", x: -29, y: -1.2, width: 4, height: 2.4 }),
+        el("rect", { class: "dark", x: 6, y: -3.6, width: 1.8, height: 7.2 }));
+      svg.append(aiHead, auv);
+
+      stage.style.height = Math.round(sea.total / SPEED + VH) + "px";
+      L = { VW, VH, WW, HERO, name: N, sea, ai, seaAn, aiAn, gradRow: row("cl"), nodes, auv, aiHead };
+      VIEW === "profile" ? drawProfile(WW, VH, PADX, seabed) : drawContours(WW, VH);
+      document.querySelectorAll("#views button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === VIEW)));
+      document.querySelectorAll("#intros button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.i === INTRO)));
+      update(); runIntro();
+    }
+
+    /* ---------- scroll-linked travel ---------- */
+    function at(tr, s) {
+      const f = clamp(s / tr.total) * (tr.pts.length - 1), i = Math.min(Math.floor(f), tr.pts.length - 2), t = f - i;
+      const a = tr.pts[i], b = tr.pts[i + 1];
+      return { x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t), i, t, ang: Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI };
+    }
+    let ticking = false;
+    function update() {
+      ticking = false;
+      if (!L) return;
+      const s = clamp(-stage.getBoundingClientRect().top * SPEED, 0, L.sea.total);
+      const p = at(L.sea, s), camX = lerp(L.sea.cam[p.i], L.sea.cam[p.i + 1], p.t);
+      if (!introDone && s > 2 && L.finishIntro) return L.finishIntro();
+      const hx = lerp(L.HERO * L.VW + (L.sea.cam[0] - L.sea.pts[0].x), 0.5 * L.VW, smooth(0, 520, s));
+      L.tx = hx - camX;
+      world.style.transform = `translate3d(${L.tx.toFixed(1)}px,0,0)`;
+      const da = `${s} ${L.sea.total + 10}`;
+      L.sea.lit.setAttribute("stroke-dasharray", da); L.sea.glow.setAttribute("stroke-dasharray", da);
+      L.sea.lit.style.visibility = L.sea.glow.style.visibility = s > 0.5 ? "" : "hidden";
+      if (introDone) L.auv.setAttribute("transform", `translate(${p.x.toFixed(1)},${p.y.toFixed(1)}) rotate(${p.ang.toFixed(1)})`);
+      const T = interp(L.seaAn, "s", "row", s), sa = T <= L.gradRow ? 0 : interp(L.aiAn, "row", "s", T), a = at(L.ai, sa), db = `${sa} ${L.ai.total + 10}`;
+      L.ai.lit.setAttribute("stroke-dasharray", db); L.ai.glow.setAttribute("stroke-dasharray", db);
+      L.ai.lit.style.visibility = L.ai.glow.style.visibility = sa > 0.5 ? "" : "hidden";
+      L.aiHead.setAttribute("transform", `translate(${a.x.toFixed(1)},${a.y.toFixed(1)})`);
+      L.aiHead.style.display = (sa <= 0 || s >= L.sea.total - 1) ? "none" : "";
+      let last = null;
+      L.nodes.forEach(n => {
+        const on = n.at <= s + 2;
+        n.node.classList.toggle("on", on); n.b.classList.toggle("on", on);
+        if (n.ring) n.ring.classList.toggle("on", on);
+        if (on && (!last || n.row >= last.row)) last = n.s;
+      });
+      yearEl.textContent = !last ? "" : last.id === "now" ? "NOW" : last.date.slice(0, 4);
+      hud.classList.toggle("show", s > 420);
+    }
+    addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    let rz, lw = innerWidth, lh = innerHeight;
+    addEventListener("resize", () => {
+      if (innerWidth === lw && Math.abs(innerHeight - lh) < 110) return;   // ignore phone address-bar jitter
+      clearTimeout(rz); rz = setTimeout(() => { lw = innerWidth; lh = innerHeight; layout(); }, 150);
+    });
+    document.querySelectorAll("#views button").forEach(b => b.addEventListener("click", () => { VIEW = b.dataset.v; layout(); }));
+    document.querySelectorAll("#intros button").forEach(b => b.addEventListener("click", () => {   // switch opening and replay it
+      INTRO = b.dataset.i; if (L && L.finishIntro) L.finishIntro(); introDone = false; world.classList.remove("ready"); scrollTo(0, 0); layout(); }));
+
+    /* ---------- detail card ---------- */
+    function toggle(id, btn) {
+      if (openId === id) return closeCard();
+      const s = STOPS.find(v => v.id === id);
+      document.querySelectorAll('.tag[aria-expanded="true"]').forEach(t => t.setAttribute("aria-expanded", "false"));
+      btn.setAttribute("aria-expanded", "true");
+      openId = id; lastFocus = btn;
+      card.className = s.tone || (s.t === "ai" ? "ai" : "sea");
+      const media =
+        (s.video ? `<div class="media${s.tall ? " tall" : ""}"><video src="${esc(s.video)}" autoplay muted loop playsinline preload="metadata"${s.tall ? " controls" : ""}></video></div>` : "") +
+        (s.imgs ? `<div class="media pair">${s.imgs.map(u => { const [src, pos] = [].concat(u); return `<img src="${esc(src)}" alt=""${pos ? ` style="object-position:${esc(pos)}"` : ""} />`; }).join("")}</div>` : "") +
+        (s.img ? `<div class="media"><img src="${esc(s.img)}" alt="" /></div>` : "");
+      const links = (s.links || []).map(([t, h]) => `<a href="${esc(h)}"${/^https?:/.test(h) ? ' target="_blank" rel="noopener"' : ""}>${esc(t)} →</a>`).join("");
+      cardBody.innerHTML =
+        `<p class="k">${esc(s.date)} · ${esc(s.where)}</p><h2>${esc(s.title)}</h2>` +
+        (s.m ? `<div class="m"><b>${esc(s.m)}</b><span>${esc(s.ml)}</span></div>` : "") +
+        `<p>${esc(s.text)}</p>` +
+        (s.crossText ? `<p class="cross">${esc(s.crossText)}</p>` : "") +
+        media + `<div class="links"><button class="grow" type="button">Open larger ⤢</button>${links}</div>`;
+      cardBody.querySelector(".grow").addEventListener("click", () => openBig(s));
+      cardBody.querySelectorAll(".media").forEach(m => m.addEventListener("click", () => openBig(s)));
+      card.hidden = false;
+      card.querySelector(".x").focus({ preventScroll: true });
+    }
+    function closeCard() {
+      if (openId === null) return;
+      card.hidden = true; cardBody.innerHTML = ""; openId = null;
+      document.querySelectorAll('.tag[aria-expanded="true"]').forEach(t => t.setAttribute("aria-expanded", "false"));
+      if (lastFocus) lastFocus.focus({ preventScroll: true });
+    }
+    card.querySelector(".x").addEventListener("click", closeCard);
+    addEventListener("keydown", e => { if (e.key === "Escape" && !big.open) closeCard(); });
+
+    /* ---------- larger view: the same stop, opened up, with every picture and clip uncropped ---------- */
+    const big = document.getElementById("big"), bigBody = document.getElementById("big-body");
+    function openBig(s) {
+      const pics = [].concat(s.imgs || [], s.img ? [s.img] : []).map(u => [].concat(u)[0]);
+      const gallery =
+        (s.video ? `<video src="${esc(s.video)}" controls autoplay muted loop playsinline preload="metadata"></video>` : "") +
+        pics.map(u => `<img src="${esc(u)}" alt="" loading="lazy" />`).join("");
+      const links = (s.links || []).map(([t, h]) => `<a href="${esc(h)}"${/^https?:/.test(h) ? ' target="_blank" rel="noopener"' : ""}>${esc(t)} →</a>`).join("");
+      big.className = s.tone || (s.t === "ai" ? "ai" : "sea");
+      bigBody.className = gallery ? "" : "nomedia";
+      bigBody.innerHTML =
+        `<div class="info"><p class="k">${esc(s.date)} · ${esc(s.where)}</p><h2>${esc(s.title)}</h2>` +
+        (s.m ? `<div class="m"><b>${esc(s.m)}</b><span>${esc(s.ml)}</span></div>` : "") +
+        `<p>${esc(s.text)}</p>` +
+        (s.more || []).map(t => `<p>${esc(t)}</p>`).join("") +          // optional longer write-up, shown only here
+        (s.crossText ? `<p class="cross">${esc(s.crossText)}</p>` : "") +
+        (links ? `<div class="links">${links}</div>` : "") + `</div>` +
+        (gallery ? `<div class="gallery">${gallery}</div>` : "");
+      cardBody.querySelectorAll("video").forEach(v => v.pause());
+      big.showModal(); big.scrollTop = 0;
+    }
+    big.querySelector(".x").addEventListener("click", () => big.close());
+    big.addEventListener("click", e => { if (e.target === big) big.close(); });        // click outside closes
+    big.addEventListener("close", () => { bigBody.innerHTML = ""; cardBody.querySelectorAll("video").forEach(v => v.play().catch(() => {})); });
+
+    /* ---------- backdrop 1: bathymetry chart seen from above ---------- */
+    function drawContours(W, H) {
+      canvas.width = W; canvas.height = H;
+      const g = canvas.getContext("2d");
+      g.clearRect(0, 0, W, H);
+      g.strokeStyle = "rgba(255,255,255,0.03)"; g.lineWidth = 1; g.beginPath();
+      for (let x = 0.5; x < W; x += 79) { g.moveTo(x, 0); g.lineTo(x, H); }
+      for (let y = 0.5; y < H; y += 79) { g.moveTo(0, y); g.lineTo(W, y); }
+      g.stroke();
+      const f = (x, y) => 0.68 * vn(x / 300, y / 300) + 0.32 * vn(x / 125 + 40, y / 125 + 40);
+      const step = 12, cols = Math.ceil(W / step) + 1, rows = Math.ceil(H / step) + 1;
+      const v = new Float32Array(cols * rows);
+      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) v[j * cols + i] = f(i * step, j * step);
+      g.strokeStyle = "rgba(170,215,205,0.085)"; g.beginPath();
+      const ip = (a, b, t) => (t - a) / (b - a);
+      for (let lv = 0.26; lv < 0.8; lv += 0.055) {
+        for (let j = 0; j < rows - 1; j++) for (let i = 0; i < cols - 1; i++) {
+          const a = v[j * cols + i], b = v[j * cols + i + 1], c = v[(j + 1) * cols + i + 1], d = v[(j + 1) * cols + i];
+          const k = (a > lv) | (b > lv) << 1 | (c > lv) << 2 | (d > lv) << 3;
+          if (k === 0 || k === 15) continue;
+          const x = i * step, y = j * step;
+          const T = [x + step * ip(a, b, lv), y], R = [x + step, y + step * ip(b, c, lv)], B = [x + step * ip(d, c, lv), y + step], Lf = [x, y + step * ip(a, d, lv)];
+          const seg = (p, q) => { g.moveTo(p[0], p[1]); g.lineTo(q[0], q[1]); };
+          switch (k) {
+            case 1: case 14: seg(Lf, T); break;
+            case 2: case 13: seg(T, R); break;
+            case 3: case 12: seg(Lf, R); break;
+            case 4: case 11: seg(R, B); break;
+            case 6: case 9: seg(T, B); break;
+            case 7: case 8: seg(Lf, B); break;
+            case 5: seg(Lf, T); seg(R, B); break;
+            case 10: seg(T, R); seg(Lf, B); break;
+          }
+        }
+      }
+      g.stroke();
+    }
+
+    /* ---------- backdrop 2: dive profile seen from the side ---------- */
+    function drawProfile(W, H, padX, seabed) {
+      canvas.width = W; canvas.height = H;
+      const g = canvas.getContext("2d");
+      const water = g.createLinearGradient(0, 0, 0, H);
+      water.addColorStop(0.27, "#10201F"); water.addColorStop(0.45, "#0D1817"); water.addColorStop(1, "#080B0A");
+      g.fillStyle = water; g.fillRect(0, 0, W, H);
+
+      // sea surface
+      const sy = H * 0.27;
+      g.fillStyle = "#0A0D0C"; g.fillRect(0, 0, W, sy);
+      g.strokeStyle = "rgba(170,215,205,0.35)"; g.lineWidth = 1.25; g.beginPath();
+      for (let x = 0; x <= W; x += 6) { const y = sy + 2.2 * Math.sin(x / 34) + 1.2 * Math.sin(x / 13); x ? g.lineTo(x, y) : g.moveTo(x, y); }
+      g.stroke();
+
+      // marine snow
+      g.fillStyle = "rgba(220,240,235,0.16)";
+      for (let i = 0; i < W * H / 9000; i++) { const x = hash(i, 1) * W, y = sy + 10 + hash(i, 2) * (H - sy); g.fillRect(x, y, 1.3, 1.3); }
+
+      // seabed, with faint layers beneath it like a sub-bottom profile
+      const line = off => { g.beginPath(); for (let x = 0; x <= W; x += 8) { const y = seabed(x - padX) + off; x ? g.lineTo(x, y) : g.moveTo(x, y); } };
+      line(0); g.lineTo(W, H + 2); g.lineTo(0, H + 2); g.closePath(); g.fillStyle = "#0F1514"; g.fill();
+      line(0); g.strokeStyle = "rgba(170,215,205,0.45)"; g.lineWidth = 1.5; g.stroke();
+      [16, 36, 62].forEach((off, i) => { line(off); g.strokeStyle = `rgba(170,215,205,${0.1 - i * 0.03})`; g.lineWidth = 1; g.stroke(); });
+    }
+
+    layout();
+  </script>
 </body>
 
 </html>
