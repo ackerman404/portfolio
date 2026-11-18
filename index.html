@@ -205,6 +205,23 @@
     .list li b { color: var(--ink); font-weight: 600; }
     .list .y { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; color: var(--ink-dim); display: block; }
     .contact { font-family: var(--mono); font-size: 0.85rem; line-height: 2.1; }
+
+    /* ---------- side quest: astrophotography ---------- */
+    #sidequest, #shenanigans, #lab { max-width: none; }
+    #lab .lede { color: var(--ink-soft); margin: 0 0 1.4rem; max-width: 44rem; }
+    .sky.lab button { background: var(--panel); display: flex; flex-direction: column; }
+    .sky.lab img { background: #fff; }
+    .sky.lab span { font-family: var(--sans); font-size: 0.98rem; font-weight: 600; letter-spacing: 0; color: var(--ink); padding-bottom: 0.2rem; }
+    .sky small { display: block; padding: 0 0.75rem 0.85rem; background: var(--panel); font-size: 0.86rem; line-height: 1.5; color: var(--ink-soft); }
+    .sky.reel img { aspect-ratio: 4 / 5; }
+    #sidequest .lede, #shenanigans .lede { color: var(--ink-soft); margin: 0 0 1.4rem; max-width: 44rem; }
+    .sky { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.9rem; }
+    .sky button { display: block; padding: 0; margin: 0; background: #000; border: 1px solid var(--hair); border-radius: 10px; overflow: hidden; cursor: zoom-in; color: inherit; font: inherit; text-align: left; transition: border-color 0.25s; }
+    .sky button:hover { border-color: var(--ink-dim); }
+    .sky button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+    .sky img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; transition: scale 0.4s ease; }
+    .sky button:hover img { scale: 1.04; }
+    .sky span { display: block; padding: 0.6rem 0.75rem 0.7rem; background: var(--panel); font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; color: var(--ink-soft); position: relative; }
     footer { margin-top: 3rem; border-top: 1px solid var(--hair); padding: 1.5rem 0 3rem; font-family: var(--mono); font-size: 0.72rem; color: var(--ink-dim); letter-spacing: 0.04em; }
 
     @media (max-width: 719px) {
@@ -222,6 +239,7 @@
       #big { width: 100vw; max-width: 100vw; max-height: 100vh; height: 100vh; border-radius: 0; border: 0; margin: 0; }
       #big-body { grid-template-columns: minmax(0, 1fr); gap: 1.2rem; padding: 1.2rem; }
       #big .info { position: static; }
+      .sky { grid-template-columns: minmax(0, 1fr); }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -262,6 +280,13 @@
 
   <div class="wrap">
 
+    <section id="lab">
+      <h2>Virginia Tech · CMAR projects</h2>
+      <p class="lede">Unconventional marine vehicles at the Center for Marine Autonomy and Robotics, funded by the
+        Office of Naval Research. Status as of May 2025.</p>
+      <div class="sky lab" id="labgrid"></div>
+    </section>
+
     <section id="publications">
       <h2>Publications</h2>
       <ul class="list">
@@ -281,6 +306,19 @@
         <li><span class="y">July 2026</span><b><a href="essays/inner-life/index.html">Raised, Not Manufactured</a></b>
         </li>
       </ul>
+    </section>
+
+    <section id="sidequest">
+      <h2>Side quest · Astrophotography</h2>
+      <p class="lede">Off the chart. Most of my work looks down through the water; on clear nights the camera points
+        the other way.</p>
+      <div class="sky" id="sky"></div>
+    </section>
+
+    <section id="shenanigans">
+      <h2>Side quest · Shenanigans</h2>
+      <p class="lede">What the charts leave out: boat days, lake trials and the clips that never made a paper.</p>
+      <div class="sky reel" id="reel"></div>
     </section>
 
     <section id="contact">
@@ -323,7 +361,7 @@
       { id: "vt", t: "sea", row: 2, date: "2023", name: "Virginia Tech",
         where: "Blacksburg, VA · 37.23°N 80.41°W", title: "Center for Marine Autonomy and Robotics",
         text: "Graduate research in acoustic tracking, 3D sonar and multi-AUV fusion.",
-        video: "assets/web/vt_three_auvs.mp4" },
+        video: "assets/web/vt_three_auvs.mp4", links: [["CMAR projects", "#lab"]] },
       { id: "seeps", t: "sea", row: 3, date: "2024", name: "Cascadia seeps",
         where: "Cascadia margin · VT-690 AUV", title: "Methane plume detection from 3D sonar",
         text: "A pipeline that finds and boxes bubble plumes, with a geodetic position for each. Published at IEEE/MTS OCEANS 2025.",
@@ -738,9 +776,14 @@
       const auv = el("g", { class: "auv" });
       auv.append(
         el("circle", { r: 26, class: "halo", fill: "var(--sea)" }),
-        el("path", { class: "hull", d: "M-23,-3.6 L12,-3.6 Q22,-3.6 26,0 Q22,3.6 12,3.6 L-23,3.6 Q-26,0 -23,-3.6 Z M-22,-3.6 L-27,-8.5 L-22.5,-8.5 L-16,-3.6 Z M-22,3.6 L-27,8.5 L-22.5,8.5 L-16,3.6 Z" }),
-        el("rect", { class: "hull", x: -29, y: -1.2, width: 4, height: 2.4 }),
-        el("rect", { class: "dark", x: 6, y: -3.6, width: 1.8, height: 7.2 }));
+        // a torpedo AUV: blunt nose, straight hull, tail cone, small control fins, ducted propeller, comms mast
+        el("path", { class: "hull", d: "M-15,-4.4 L19,-4.4 C23.6,-4.4 26,-2.4 26,0 C26,2.4 23.6,4.4 19,4.4 L-15,4.4 L-25,1.5 L-25,-1.5 Z" }),
+        el("path", { class: "hull", d: "M-17,-3.6 L-18.5,-8 L-22.5,-8 L-22,-2.2 Z M-17,3.6 L-18.5,8 L-22.5,8 L-22,2.2 Z" }),
+        el("rect", { class: "hull", x: -27.4, y: -0.9, width: 3, height: 1.8 }),
+        el("rect", { class: "hull", x: -30, y: -5.2, width: 2.6, height: 10.4, rx: 1.3 }),
+        el("path", { class: "hull", d: "M2.4,-4.4 L3.2,-10 L5,-10 L5.8,-4.4 Z" }),
+        el("rect", { class: "dark", x: 13.5, y: -4.4, width: 1.6, height: 8.8 }),
+        el("rect", { class: "dark", x: -9, y: -4.4, width: 1.6, height: 8.8 }));
       svg.append(aiHead, auv);
 
       stage.style.height = Math.round(sea.total / SPEED + VH) + "px";
@@ -834,7 +877,7 @@
     function openBig(s) {
       const pics = [].concat(s.imgs || [], s.img ? [s.img] : []).map(u => [].concat(u)[0]);
       const gallery =
-        (s.video ? `<video src="${esc(s.video)}" controls autoplay muted loop playsinline preload="metadata"></video>` : "") +
+        [].concat(s.video || [], s.videos || []).map(u => `<video src="${esc(u)}" controls autoplay muted loop playsinline preload="metadata"></video>`).join("") +
         pics.map(u => `<img src="${esc(u)}" alt="" loading="lazy" />`).join("");
       const links = (s.links || []).map(([t, h]) => `<a href="${esc(h)}"${/^https?:/.test(h) ? ' target="_blank" rel="noopener"' : ""}>${esc(t)} →</a>`).join("");
       big.className = s.tone || (s.t === "ai" ? "ai" : "sea");
@@ -851,8 +894,76 @@
       big.showModal(); big.scrollTop = 0;
     }
     big.querySelector(".x").addEventListener("click", () => big.close());
-    big.addEventListener("click", e => { if (e.target === big) big.close(); });        // click outside closes
+    big.addEventListener("click", e => { if (e.target === big || e.target.closest('a[href^="#"]')) big.close(); });        // click outside closes; so does a link to a section of this page
     big.addEventListener("close", () => { bigBody.innerHTML = ""; cardBody.querySelectorAll("video").forEach(v => v.play().catch(() => {})); });
+
+    /* ---------- side quest: astrophotography. Edit this list to change the gallery ---------- */
+    const SKY = [
+      { name: "Milky Way and Andromeda", thumb: "assets/astro/milkyway_andromeda_thumb.jpg", img: "assets/astro/milkyway_andromeda.jpg",
+        text: "The winter Milky Way over bare trees, with the Andromeda galaxy at upper left." },
+      { name: "Orion", thumb: "assets/astro/orion_thumb.jpg", img: "assets/astro/orion.jpg",
+        text: "Orion and the winter stars, stacked from frames shot on the night of the Geminids." },
+      { name: "Milky Way timelapse", thumb: "assets/astro/milkyway_timelapse_thumb.jpg", video: "assets/astro/milkyway_timelapse.mp4",
+        text: "The Milky Way turning behind the treeline." }
+    ];
+    /* ---------- side quest: shenanigans. Clips from the field; edit this list to change the gallery ---------- */
+    const V = "assets/shenanigans/";
+    const REEL = [
+      { name: "Surface run", thumb: V + "auv_surface_run_thumb.jpg", video: V + "auv_surface_run.mp4",
+        text: "An AUV running on the surface during a lake day." },
+      { name: "Two on deck", thumb: V + "two_auvs_on_deck_thumb.jpg", video: V + "two_auvs_on_deck.mp4",
+        text: "Two AUVs on their cradles on the pontoon boat, heading out." },
+      { name: "Lake trials", thumb: V + "small_auv_handoff_thumb.jpg", video: V + "small_auv_handoff.mp4",
+        text: "Getting the small AUV ready to go over the side." },
+      { name: "Hydrofoil pass", thumb: V + "hydrofoil_pass_thumb.jpg", video: V + "hydrofoil_pass.mp4",
+        text: "Hydrofoil testing, up on the foil." },
+      { name: "Hydrofoil run", thumb: V + "hydrofoil_run_thumb.jpg", video: V + "hydrofoil_run.mp4",
+        text: "A longer hydrofoil run across the lake." },
+      { name: "Hyper Horizon reel", thumb: V + "hyper_horizon_reel_thumb.jpg", video: V + "hyper_horizon_reel.mp4",
+        text: "Building, manufacturing and Ulsoor Lake: the Hyper Horizon days in thirteen seconds." }
+    ];
+    /* ---------- Virginia Tech CMAR projects, from the May 2025 ONR update. Edit this list to change the cards ---------- */
+    const C = "assets/cmar/";
+    const LAB = [
+      { name: "Small autonomous hydrofoil vessel", thumb: C + "hydrofoil_thumb.jpg",
+        blurb: "An uncrewed boat that rides on hydrofoils and follows GPS waypoints.",
+        text: "A small uncrewed vessel that flies on hydrofoils. It navigates GPS waypoints on its own, and carried a single-beam sonar that recorded bathymetry at about 10 knots.",
+        more: ["The video is a field trial of waypoint navigation. The two plots are the logged GPS track from that run and the track after tuning to follow the waypoints closely. Red dots are waypoints, green dots are start points.",
+          "Next steps at the time: a steadier and higher ride, tighter turns, ocean trials in surf at Hampton Roads, and raising the speed toward 20 knots."],
+        videos: [C + "hydrofoil_waypoint_trial.mp4"], imgs: [C + "hydrofoil_track_before.jpg", C + "hydrofoil_track_tuned.jpg"] },
+      { name: "Dragon AUV", thumb: C + "dragon_thumb.jpg",
+        blurb: "Tracking a sound source from a moving AUV with a hydrophone array.",
+        text: "Field trials at Claytor Lake with a submerged white-noise source as the target. Dragon held its heading at 2 m depth for 30 seconds while the array separated the source from background noise, and a particle filter estimated its bearing.",
+        more: ["The clips show the beamforming output from the lake test and the particle filter converging on the target bearing. The plot is the estimated bearing over the run.",
+          "Dragon flooded and sank during these trials. It was recovered, and repairs were nearly done at the time of this update."],
+        videos: [C + "dragon_beamforming.mp4", C + "dragon_particle_filter.mp4"], imgs: [C + "dragon_bearing_estimate.jpg"] },
+      { name: "Hydrofoil add-on for a small RHIB", thumb: C + "rhib_thumb.jpg",
+        blurb: "A bolt-on frame with hydrofoil arms and thrusters for a rigid inflatable boat.",
+        text: "A frame that fits around a small RHIB and carries hydrofoil arms with thrusters. The structural members were finalized, and the thruster-to-arm interface was redesigned for a custom fit and checked with finite element analysis.",
+        more: ["Pictured: the CAD render of the boat in its frame, the FEA of the thruster mount and arm, and the assembled aft starboard hydrofoil arm. Manufacturing of the arms and main frame had begun."],
+        imgs: [C + "rhib_cad.jpg", C + "rhib_fea.jpg", C + "rhib_foil_arm.jpg"] },
+      { name: "Hybrid surface/subsurface DPV", thumb: C + "dpv_thumb.jpg",
+        blurb: "A craft built to test hydrofoil, propulsion and control design for surface running.",
+        text: "Built to evaluate a hydrofoil, propulsion and control design for surface operations. The craft was fully assembled, closed-loop software testing was completed, and it had its first successful in-water test.",
+        more: ["The video is the first sea trial, where it did not take off. Planned next: takeoff conditions and in-flight pitch stability, the actuation system, and roll stability with a split flap."],
+        videos: [C + "dpv_first_sea_trial.mp4"], imgs: [C + "dpv_on_trailer.jpg"] },
+      { name: "Hovercraft", thumb: C + "hovercraft_thumb.jpg",
+        blurb: "A hovercraft and a maneuvering simulator, checked against field trials.",
+        text: "A maneuvering simulator that predicts the craft's surge, heave and turning, tested against field trials of turning circles and of how the dynamics change with centre of gravity and fan speed.",
+        more: ["The clips show the craft on a steep incline and a turning-circle test. The plot compares the simulator with experiment for the turning circle.",
+          "Ongoing at the time: applying what was learned about skirt design to a jet ski version, and calibrating the model for steep inclines."],
+        videos: [C + "hovercraft_incline.mp4", C + "hovercraft_turning_circle.mp4"], imgs: [C + "hovercraft_sim_vs_experiment.jpg"] }
+    ];
+
+    const tiles = (rootId, list, where, date = "Side quest") => list.forEach(p => {
+      const b = document.createElement("button"); b.type = "button";
+      b.innerHTML = `<img src="${esc(p.thumb)}" alt="${esc(p.name)}" loading="lazy" /><span>${esc(p.name)}${p.video && list.some(q => !q.video) ? " · video" : ""}</span>` + (p.blurb ? `<small>${esc(p.blurb)}</small>` : "");
+      b.addEventListener("click", () => openBig({ t: "sea", date, where, title: p.name, text: p.text, more: p.more, img: p.img, imgs: p.imgs, video: p.video, videos: p.videos }));
+      document.getElementById(rootId).append(b);
+    });
+    tiles("labgrid", LAB, "Virginia Tech · CMAR", "2025");
+    tiles("sky", SKY, "Astrophotography");
+    tiles("reel", REEL, "Shenanigans");
 
     /* ---------- backdrop 1: bathymetry chart seen from above ---------- */
     function drawContours(W, H) {
