@@ -197,6 +197,29 @@
     #big .gallery { display: grid; gap: 0.9rem; }
     #big .gallery img, #big .gallery video { display: block; width: 100%; height: auto; max-height: 82vh; object-fit: contain; border-radius: 10px; border: 1px solid var(--hair); background: #000; }
 
+    /* ---------- before / after infographic on a stop ---------- */
+    .ba { border: 1px solid var(--hair); border-radius: 12px; overflow: hidden; background: var(--bg); }
+    .ba .hd, .ba .r { display: grid; grid-template-columns: 6.5rem 1fr 1fr; }
+    .ba .hd span { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); padding: 0.7rem 0.9rem; }
+    .ba .hd span:last-child { color: var(--sea); }
+    .ba .r > * { padding: 0.75rem 0.9rem; border-top: 1px solid var(--hair); font-size: 0.92rem; line-height: 1.4; }
+    .ba .l { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); padding-top: 0.95rem; }
+    .ba .b { color: var(--ink-dim); }
+    .ba .a { color: var(--ink); background: color-mix(in srgb, var(--sea) 8%, transparent); }
+    .ba .b::before { content: "✕"; margin-right: 0.5rem; opacity: 0.7; }
+    .ba .a::before { content: "✓"; margin-right: 0.5rem; color: var(--sea); }
+    .steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.6rem; margin-top: 0.9rem; }
+    .steps div { border: 1px solid var(--hair); border-radius: 10px; padding: 0.7rem 0.8rem 0.8rem; background: var(--bg); }
+    .steps i { display: block; font-style: normal; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); }
+    .steps b { display: block; font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; color: var(--sea); line-height: 1.3; }
+    .steps span { display: block; font-size: 0.78rem; line-height: 1.35; color: var(--ink-soft); }
+    #card .infog { margin: 0 0 0.9rem; cursor: zoom-in; }
+    #card .ba .hd, #card .ba .r { grid-template-columns: 1fr 1fr; }
+    #card .ba .hd span:first-child { display: none; }
+    #card .ba .l { grid-column: 1 / -1; padding-bottom: 0; }
+    #card .ba .l + * , #card .ba .l + * + * { border-top: 0; font-size: 0.84rem; }
+    #card .steps { grid-template-columns: 1fr 1fr; }
+
     /* ---------- lower sections ---------- */
     section { padding: 3rem 0 0.5rem; max-width: 44rem; }
     section h2 { font-family: var(--mono); font-size: 0.72rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); border-top: 1px solid var(--hair); padding-top: 1.1rem; margin: 0 0 1.5rem; }
@@ -240,6 +263,11 @@
       #big-body { grid-template-columns: minmax(0, 1fr); gap: 1.2rem; padding: 1.2rem; }
       #big .info { position: static; }
       .sky { grid-template-columns: minmax(0, 1fr); }
+      .ba .hd, .ba .r { grid-template-columns: 1fr 1fr; }
+      .ba .hd span:first-child { display: none; }
+      .ba .l { grid-column: 1 / -1; padding-bottom: 0; }
+      .ba .l + *, .ba .l + * + * { border-top: 0; }
+      .steps { grid-template-columns: 1fr 1fr; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -380,11 +408,29 @@
         text: "Graduated from Virginia Tech. Thesis: Ambiguity-Aware Acoustic Target Tracking on the Dragon AUV." },
       { id: "orpheus", t: "sea", row: 7, date: "2026-01", name: "Orpheus Ocean",
         where: "Cape Cod, MA", title: "Senior Autonomy/GNC Engineer",
-        text: "Wrote the vehicle's navigation filter, guidance and mission behaviors, and the eelgrass sim they are tested in.",
+        text: "When I joined there was no autonomy and no GNC: missions were typed in from an operator console. I wrote the navigation filter, guidance and mission behaviors it flies on now, and the eelgrass sim they are tested in.",
+        info: { from: "January 2026 · when I joined", to: "Today",
+          rows: [["Navigation", "No position estimate", "17-state EKF, 0.67% dead-reckoning error"],
+            ["Guidance", "None", "Waypoint missions, flown without an operator"],
+            ["Missions", "Typed in from an operator console", "Survey, land, sample and return on its own"],
+            ["Retasking", "None once submerged", "By acoustic modem, mid-dive"]],
+          steps: [["Jul · MITRE tank", "7 cm", "cross-track error against motion capture"], ["Jul · Hyannis", "6.8 km", "surveyed at 0.70 m altitude"],
+            ["Aug · Blue Tide", "0.23 m", "off the bottom for 9 min, retasked by modem"], ["Sep · ANTX", "2 cores", "landed with no GPS and came home"]] },
         m: "17", ml: "state EKF: IMU, DVL, depth, heading, GPS and USBL" },
       { id: "patent", t: "ai", row: 8, date: "2026-02", name: "CRMA patent filing",
         where: "US provisional patent application", title: "Patent application filed for CRMA",
         text: "The continual fine-tuning method behind CRMA went into a US provisional patent application, filed in February 2026." },
+      { id: "dvl", t: "sea", row: 8.5, date: "2026-04", name: "DVL over eelgrass",
+        where: "Gazebo simulation · open-source contribution and paper", title: "A probabilistic DVL model for vegetated seabeds",
+        text: "A DVL loses bottom lock over seagrass, and the simulator did not model it. This model works out each beam's path through the canopy and draws bottom lock per beam from the sonar equation.",
+        m: "0.83", ml: "of 4 beams locked on average over a 1.2 m canopy on mud",
+        info: { from: "Stock simulator DVL", to: "This model",
+          rows: [["Seabed", "Collision geometry, no vegetation", "Canopy height and density map"],
+            ["Bottom lock", "No canopy effect", "Per-beam probability from signal-to-noise"],
+            ["Dropout", "Not modeled", "Bursty: a lost beam takes several pings to reacquire"],
+            ["Velocity noise", "Same over any seabed", "Grows with canopy, different on each axis"]],
+          steps: [["Calibration", "9.2 dB", "bottom return lost over dense eelgrass (Warren & Peterson 2007)"], ["Derived", "5.9 dB/m", "one-way canopy attenuation at 600 kHz"],
+            ["Bare bottom", "4 of 4", "beams locked, baseline noise"], ["Dominant factor", "Height", "a 0.1 m canopy has no effect; 1.2 m is severe"]] } },
       { id: "crma", t: "ai", row: 9, date: "2026-05", name: "CRMA",
         where: "arXiv:2606.00382", title: "Continual fine-tuning without forgetting",
         text: "Adds new domains to a model without overwriting old ones. Mistral-7B, five domains in sequence, three seeds.",
@@ -418,8 +464,9 @@
         imgs: [["assets/field/bluetide_launch.jpg", "0% 50%"], "assets/field/bluetide_crane.jpg"] },
       { id: "antx", t: "sea", row: 15, date: "2026-09", name: "ANTX",
         where: "Port Hueneme, CA · 34.15°N 119.20°W", title: "Autonomous seabed sampling",
-        text: "Dropped its weights, landed with no GPS, took both cores and came home, reporting over the acoustic modem all the way.",
+        text: "Dropped its weights, landed with no GPS, took both cores and came home, reporting over the acoustic modem all the way. Pictured first: the push-core sediment back on deck with the science team.",
         m: "10.6 min", ml: "splash to surface, with two cores aboard",
+        img: ["assets/field/antx_pushcore.jpg", "50% 78%"],
         imgs: ["assets/field/antx_recovery.jpg", "assets/field/antx_crane.jpg"] },
       { id: "decision", t: "ai", row: 16, date: "2026-09", name: "Decision layer",
         where: "Replayed on the July 30 survey", title: "A decision layer that shows its work",
@@ -573,7 +620,7 @@
     /* ---------- view 1: chart. Straight legs between waypoints, with the manoeuvre each stop is known for ---------- */
     function buildChart(G) {
       const { VH, X, uOf, uEnd, k } = G, Y = f => VH * f;
-      const yf = { sauvc: 0.64, hh: 0.5, vt: 0.63, dragon: 0.62, seeps: 0.5, cl: 0.5, grad: 0.58, orpheus: 0.69, mitre: 0.61, hyannis: 0.5, octans: 0.75, bluetide: 0.62, antx: 0.73, now: 0.52,
+      const yf = { dvl: 0.57, sauvc: 0.64, hh: 0.5, vt: 0.63, dragon: 0.62, seeps: 0.5, cl: 0.5, grad: 0.58, orpheus: 0.69, mitre: 0.61, hyannis: 0.5, octans: 0.75, bluetide: 0.62, antx: 0.73, now: 0.52,
         patent: 0.27, crma: 0.35, modelbrew: 0.24, ergos: 0.33, decision: 0.33, fly: 0.26 };
       const A = id => ({ x: X(uOf(row(id))), y: Y(yf[id]) });
       const v = [], decor = [], tag = {};
@@ -604,6 +651,10 @@
       const cl = A("cl"); go(cl.x, cl.y);            // where the AI path begins
       const gr = A("grad"); go(gr.x, gr.y); tag.grad = { below: true };
       const or = A("orpheus"); go(or.x, or.y); tag.orpheus = { below: true };
+
+      // DVL over eelgrass: a pass over a patch of canopy
+      const dv = A("dvl"); go(dv.x, dv.y);
+      [-2, -1, 0, 1, 2].forEach(i => decor.push({ t: "blade", x: dv.x + i * 9 * k, y: dv.y + 30 * k, h: (11 + 4 * (i % 2 ? 1 : 0)) * k }));
 
       // MITRE: a lap of the test tank
       const mi = A("mitre"); lap(mi, 84 * k, 44 * k); tag.mitre = { below: true };
@@ -709,6 +760,7 @@
         else if (d.t === "dot") svg.append(el("circle", { cx: d.x, cy: d.y, r: d.r, class: "decor fill" }));
         else if (d.t === "sq") svg.append(el("rect", { x: d.x - 4, y: d.y - 4, width: 8, height: 8, class: "decor sq" }));
         else if (d.t === "cross") svg.append(el("path", { d: `M${d.x - 5},${d.y} h10 M${d.x},${d.y - 5} v10`, class: "decor" }));
+        else if (d.t === "blade") svg.append(el("path", { d: `M${d.x},${d.y} q${3},${-d.h / 2} 0,${-d.h}`, class: "decor" }));
         else if (d.t === "ghost") svg.append(el("line", { x1: d.x1, y1: d.y1, x2: d.x2, y2: d.y2, class: "decor ghost" }));
       });
 
@@ -839,6 +891,11 @@
     document.querySelectorAll("#intros button").forEach(b => b.addEventListener("click", () => {   // switch opening and replay it
       INTRO = b.dataset.i; if (L && L.finishIntro) L.finishIntro(); introDone = false; world.classList.remove("ready"); scrollTo(0, 0); layout(); }));
 
+    /* ---------- before / after infographic, drawn from a stop's `info` ---------- */
+    const infog = s => !s.info ? "" : `<div class="infog"><div class="ba"><div class="hd"><span></span><span>${esc(s.info.from)}</span><span>${esc(s.info.to)}</span></div>` +
+      s.info.rows.map(([l, b, a]) => `<div class="r"><span class="l">${esc(l)}</span><span class="b">${esc(b)}</span><span class="a">${esc(a)}</span></div>`).join("") + `</div>` +
+      `<div class="steps">${s.info.steps.map(([d, n, t]) => `<div><i>${esc(d)}</i><b>${esc(n)}</b><span>${esc(t)}</span></div>`).join("")}</div></div>`;
+
     /* ---------- detail card ---------- */
     function toggle(id, btn) {
       if (openId === id) return closeCard();
@@ -849,17 +906,17 @@
       card.className = s.tone || (s.t === "ai" ? "ai" : "sea");
       const media =
         (s.video ? `<div class="media${s.tall ? " tall" : ""}"><video src="${esc(s.video)}" autoplay muted loop playsinline preload="metadata"${s.tall ? " controls" : ""}></video></div>` : "") +
-        (s.imgs ? `<div class="media pair">${s.imgs.map(u => { const [src, pos] = [].concat(u); return `<img src="${esc(src)}" alt=""${pos ? ` style="object-position:${esc(pos)}"` : ""} />`; }).join("")}</div>` : "") +
-        (s.img ? `<div class="media"><img src="${esc(s.img)}" alt="" /></div>` : "");
+        (s.img ? (([src, pos]) => `<div class="media"><img src="${esc(src)}" alt=""${pos ? ` style="object-position:${esc(pos)}"` : ""} /></div>`)([].concat(s.img)) : "") +
+        (s.imgs ? `<div class="media pair">${s.imgs.map(u => { const [src, pos] = [].concat(u); return `<img src="${esc(src)}" alt=""${pos ? ` style="object-position:${esc(pos)}"` : ""} />`; }).join("")}</div>` : "");
       const links = (s.links || []).map(([t, h]) => `<a href="${esc(h)}"${/^https?:/.test(h) ? ' target="_blank" rel="noopener"' : ""}>${esc(t)} →</a>`).join("");
       cardBody.innerHTML =
         `<p class="k">${esc(s.date)} · ${esc(s.where)}</p><h2>${esc(s.title)}</h2>` +
         (s.m ? `<div class="m"><b>${esc(s.m)}</b><span>${esc(s.ml)}</span></div>` : "") +
         `<p>${esc(s.text)}</p>` +
         (s.crossText ? `<p class="cross">${esc(s.crossText)}</p>` : "") +
-        media + `<div class="links"><button class="grow" type="button">Open larger ⤢</button>${links}</div>`;
+        infog(s) + media + `<div class="links"><button class="grow" type="button">Open larger ⤢</button>${links}</div>`;
       cardBody.querySelector(".grow").addEventListener("click", () => openBig(s));
-      cardBody.querySelectorAll(".media").forEach(m => m.addEventListener("click", () => openBig(s)));
+      cardBody.querySelectorAll(".media, .infog").forEach(m => m.addEventListener("click", () => openBig(s)));
       card.hidden = false;
       card.querySelector(".x").focus({ preventScroll: true });
     }
@@ -875,8 +932,8 @@
     /* ---------- larger view: the same stop, opened up, with every picture and clip uncropped ---------- */
     const big = document.getElementById("big"), bigBody = document.getElementById("big-body");
     function openBig(s) {
-      const pics = [].concat(s.imgs || [], s.img ? [s.img] : []).map(u => [].concat(u)[0]);
-      const gallery =
+      const pics = [].concat(s.img ? [s.img] : [], s.imgs || []).map(u => [].concat(u)[0]);
+      const gallery = infog(s) +
         [].concat(s.video || [], s.videos || []).map(u => `<video src="${esc(u)}" controls autoplay muted loop playsinline preload="metadata"></video>`).join("") +
         pics.map(u => `<img src="${esc(u)}" alt="" loading="lazy" />`).join("");
       const links = (s.links || []).map(([t, h]) => `<a href="${esc(h)}"${/^https?:/.test(h) ? ' target="_blank" rel="noopener"' : ""}>${esc(t)} →</a>`).join("");
