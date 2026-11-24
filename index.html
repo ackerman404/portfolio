@@ -230,11 +230,7 @@
     .contact { font-family: var(--mono); font-size: 0.85rem; line-height: 2.1; }
 
     /* ---------- side quest: astrophotography ---------- */
-    #sidequest, #shenanigans, #lab { max-width: none; }
-    #lab .lede { color: var(--ink-soft); margin: 0 0 1.4rem; max-width: 44rem; }
-    .sky.lab button { background: var(--panel); display: flex; flex-direction: column; }
-    .sky.lab img { background: #fff; }
-    .sky.lab span { font-family: var(--sans); font-size: 0.98rem; font-weight: 600; letter-spacing: 0; color: var(--ink); padding-bottom: 0.2rem; }
+    #sidequest, #shenanigans { max-width: none; }
     .sky small { display: block; padding: 0 0.75rem 0.85rem; background: var(--panel); font-size: 0.86rem; line-height: 1.5; color: var(--ink-soft); }
     .sky.reel img { aspect-ratio: 4 / 5; }
     #sidequest .lede, #shenanigans .lede { color: var(--ink-soft); margin: 0 0 1.4rem; max-width: 44rem; }
@@ -307,13 +303,6 @@
   </noscript>
 
   <div class="wrap">
-
-    <section id="lab">
-      <h2>Virginia Tech · CMAR projects</h2>
-      <p class="lede">Unconventional marine vehicles at the Center for Marine Autonomy and Robotics, funded by the
-        Office of Naval Research. Status as of May 2025.</p>
-      <div class="sky lab" id="labgrid"></div>
-    </section>
 
     <section id="publications">
       <h2>Publications</h2>
@@ -389,7 +378,7 @@
       { id: "vt", t: "sea", row: 2, date: "2023", name: "Virginia Tech",
         where: "Blacksburg, VA · 37.23°N 80.41°W", title: "Center for Marine Autonomy and Robotics",
         text: "Graduate research in acoustic tracking, 3D sonar and multi-AUV fusion.",
-        video: "assets/web/vt_three_auvs.mp4", links: [["CMAR projects", "#lab"]] },
+        video: "assets/web/vt_three_auvs.mp4" },
       { id: "seeps", t: "sea", row: 3, date: "2024", name: "Cascadia seeps",
         where: "Cascadia margin · VT-690 AUV", title: "Methane plume detection from 3D sonar",
         text: "A pipeline that finds and boxes bubble plumes, with a geodetic position for each. Published at IEEE/MTS OCEANS 2025.",
@@ -445,9 +434,16 @@
         m: "7 cm", ml: "mean cross-track error; 15 cm at the 95th percentile",
         video: "assets/field/mitre_tank.mp4", img: "assets/field/mitre_bluetech_lab.jpg" },
       { id: "ergos", t: "ai", row: 12, date: "2026", name: "Ergos",
-        where: "Research thesis", title: "A governed memory for a robot",
-        text: "Memory grafted onto a frozen robot model: taught in one typed sentence, kept across a restart, deleted with a certificate.",
-        m: "10/10", ml: "recalled after a full restart; its twin scored 0/10",
+        where: "Research program · simulation study (LIBERO)", title: "How a robot handles knowledge after it ships",
+        text: "I designed the memory architecture and the experiments that test it, then wrapped it around a frozen OpenVLA-7B so that anything that changed had to come from the memory.",
+        m: "29/30", ml: "tasks done with a word taught in one typed sentence; the untouched model managed 2/30",
+        info: { from: "OpenVLA-7B alone", to: "Same model, with the Ergos memory",
+          rows: [["Taught a new word", "2 of 30 tasks", "29 of 30 tasks"],
+            ["After a full restart", "0 of 10", "10 of 10, nothing retyped"],
+            ["Told to forget", "Nothing it can remove", "9 of 9 deleted, each with a certificate anyone can check"],
+            ["Asked for the untaught", "Guesses", "Refused 10 of 10, no false refusals"]],
+          steps: [["1 · Identity", "15/15", "gates passed: one object keeps one memory slot across frames"], ["2 · Does memory matter?", "0 of 5", "succeeded once I shuffled the memory mapping on purpose"],
+            ["3 · Lifecycle", "6 steps", "teach, act, forget, refuse, re-teach, act, run end to end"], ["4 · Not yet", "Sim only", "no physical robot was run, and one seed so far"]] },
         img: "ergos/assets/poster_index.jpg",
         links: [["thesis", "ergos/index.html"], ["essay", "essays/inner-life/index.html"]] },
       { id: "hyannis", t: "sea", row: 13, cross: true, date: "2026-07", name: "Hyannis survey",
@@ -979,41 +975,12 @@
       { name: "Hyper Horizon reel", thumb: V + "hyper_horizon_reel_thumb.jpg", video: V + "hyper_horizon_reel.mp4",
         text: "Building, manufacturing and Ulsoor Lake: the Hyper Horizon days in thirteen seconds." }
     ];
-    /* ---------- Virginia Tech CMAR projects, from the May 2025 ONR update. Edit this list to change the cards ---------- */
-    const C = "assets/cmar/";
-    const LAB = [
-      { name: "Small autonomous hydrofoil vessel", thumb: C + "hydrofoil_thumb.jpg",
-        blurb: "An uncrewed boat that rides on hydrofoils and follows GPS waypoints.",
-        text: "A small uncrewed vessel that flies on hydrofoils. It navigates GPS waypoints on its own, and carried a single-beam sonar that recorded bathymetry at about 10 knots.",
-        more: ["The video is a field trial of waypoint navigation. The two plots are the logged GPS track from that run and the track after tuning to follow the waypoints closely. Red dots are waypoints, green dots are start points.",
-          "Next steps at the time: a steadier and higher ride, tighter turns, ocean trials in surf at Hampton Roads, and raising the speed toward 20 knots."],
-        videos: [C + "hydrofoil_waypoint_trial.mp4"], imgs: [C + "hydrofoil_track_before.jpg", C + "hydrofoil_track_tuned.jpg"] },
-      { name: "Dragon AUV", thumb: C + "dragon_thumb.jpg",
-        blurb: "Tracking a sound source from a moving AUV with a hydrophone array.",
-        text: "Field trials at Claytor Lake with a submerged white-noise source as the target. Dragon held its heading at 2 m depth for 30 seconds while the array separated the source from background noise, and a particle filter estimated its bearing.",
-        more: ["The clips show the beamforming output from the lake test and the particle filter converging on the target bearing. The plot is the estimated bearing over the run.",
-          "Dragon flooded and sank during these trials. It was recovered, and repairs were nearly done at the time of this update."],
-        videos: [C + "dragon_beamforming.mp4", C + "dragon_particle_filter.mp4"], imgs: [C + "dragon_bearing_estimate.jpg"] },
-      { name: "Hybrid surface/subsurface DPV", thumb: C + "dpv_thumb.jpg",
-        blurb: "A craft built to test hydrofoil, propulsion and control design for surface running.",
-        text: "Built to evaluate a hydrofoil, propulsion and control design for surface operations. The craft was fully assembled, closed-loop software testing was completed, and it had its first successful in-water test.",
-        more: ["The video is the first sea trial, where it did not take off. Planned next: takeoff conditions and in-flight pitch stability, the actuation system, and roll stability with a split flap."],
-        videos: [C + "dpv_first_sea_trial.mp4"], imgs: [C + "dpv_on_trailer.jpg"] },
-      { name: "Hovercraft", thumb: C + "hovercraft_thumb.jpg",
-        blurb: "A hovercraft and a maneuvering simulator, checked against field trials.",
-        text: "A maneuvering simulator that predicts the craft's surge, heave and turning, tested against field trials of turning circles and of how the dynamics change with centre of gravity and fan speed.",
-        more: ["The clips show the craft on a steep incline and a turning-circle test. The plot compares the simulator with experiment for the turning circle.",
-          "Ongoing at the time: applying what was learned about skirt design to a jet ski version, and calibrating the model for steep inclines."],
-        videos: [C + "hovercraft_incline.mp4", C + "hovercraft_turning_circle.mp4"], imgs: [C + "hovercraft_sim_vs_experiment.jpg"] }
-    ];
-
     const tiles = (rootId, list, where, date = "Side quest") => list.forEach(p => {
       const b = document.createElement("button"); b.type = "button";
       b.innerHTML = `<img src="${esc(p.thumb)}" alt="${esc(p.name)}" loading="lazy" /><span>${esc(p.name)}${p.video && list.some(q => !q.video) ? " · video" : ""}</span>` + (p.blurb ? `<small>${esc(p.blurb)}</small>` : "");
       b.addEventListener("click", () => openBig({ t: "sea", date, where, title: p.name, text: p.text, more: p.more, img: p.img, imgs: p.imgs, video: p.video, videos: p.videos }));
       document.getElementById(rootId).append(b);
     });
-    tiles("labgrid", LAB, "Virginia Tech · CMAR", "2025");
     tiles("sky", SKY, "Astrophotography");
     tiles("reel", REEL, "Shenanigans");
 
